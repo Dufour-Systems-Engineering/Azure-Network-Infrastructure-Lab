@@ -2,6 +2,27 @@
 
 All notable changes to the Azure Network Infrastructure Lab repository will be documented in this file.
 
+## 2026-06-09
+
+### Added
+
+* Added `storage/nfs-server-deployment.md`.
+* Added NFS server deployment evidence screenshots under `screenshots/storage/nfs-server-deployment/`.
+
+### Storage
+
+* Documented NFS server package installation.
+* Documented NFS service status.
+* Documented `/srv/nfs` export directory structure.
+* Documented `/etc/exports` configuration.
+* Documented active NFS exports using `exportfs`.
+* Documented local NFS export validation using `showmount`.
+
+### Notes
+
+* This update begins the storage documentation section.
+* Client-side NFS integration will be documented separately.
+
 ## 2026-06-06
 
 ### Added
@@ -19,21 +40,12 @@ All notable changes to the Azure Network Infrastructure Lab repository will be d
 * Added `architecture/ip-addressing-plan.md`.
 * Added `architecture/security-model.md`.
 
-Documented architecture topics include:
-
-* Lab purpose and environment overview
-* Logical topology
-* VNet and subnet structure
-* IP addressing plan
-* Remote access boundary
-* Security model
-* Infrastructure, client, monitoring, and DNS placement
-
 ### Network
 
 * Added `network/vnet-subnet-design.md`.
 * Added `network/nsg-asg-implementation.md`.
 * Added `network/private-dns-implementation.md`.
+* Added `network/reverse-dns-migration.md`.
 
 Documented network topics include:
 
@@ -53,6 +65,7 @@ Documented network topics include:
 * Private DNS reverse zone
 * Private DNS virtual network links
 * DNS lookup validation from WireGuardVM1, TestClientVM1, and NetMonVM1
+* Reverse DNS PTR record implementation and validation
 
 ### Screenshots
 
@@ -72,4 +85,4 @@ Documented network topics include:
 ### Notes
 
 * This push establishes the repository foundation.
-* Remaining sections will be expanded in later updates, including storage, deployment, remote access, monitoring, operations, troubleshooting, evidence, scripts, exports, and templates.
+* Remaining sections will be expanded in later updates, including deployment, remote access, monitoring, operations, troubleshooting, evidence, scripts, exports, and templates.

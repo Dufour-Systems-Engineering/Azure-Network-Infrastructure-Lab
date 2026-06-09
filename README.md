@@ -4,7 +4,7 @@
 
 Azure Network Infrastructure Lab is a hands-on Azure infrastructure project focused on private networking, subnet segmentation, remote access, internal DNS, security group design, and Linux-based infrastructure services.
 
-The lab is built around a segmented Azure virtual network that hosts Linux infrastructure systems, a Linux client fleet, a WireGuard remote access gateway, and a monitoring/diagnostics host.
+The lab is built around a segmented Azure virtual network that hosts Linux infrastructure systems, a Linux client fleet, a WireGuard remote access gateway, an NFS server, and a monitoring/diagnostics host.
 
 The purpose of this repository is to document the design, implementation, validation, and troubleshooting of the environment in a professional, repeatable format.
 
@@ -20,7 +20,7 @@ Primary goals include:
 * Implement WireGuard-based remote administrative access
 * Configure Azure Private DNS for internal name resolution
 * Document NSG and ASG usage for traffic control
-* Support Linux infrastructure services such as NFS
+* Deploy Linux infrastructure services such as NFS
 * Support monitoring and diagnostics through a dedicated NetMon host
 * Maintain evidence-backed documentation with screenshots and validation results
 
@@ -28,15 +28,16 @@ Primary goals include:
 
 The lab is hosted in Azure using a single virtual network:
 
-| Item                | Value                                 |
-| ------------------- | ------------------------------------- |
-| Project name        | Azure Network Infrastructure Lab      |
-| Resource group      | TestGroup1                            |
-| Primary VNet        | TestVNet1                             |
-| Primary region      | West US                               |
-| VNet address space  | 10.0.0.0/24                           |
-| Remote access model | WireGuard VPN and SSH                 |
-| DNS model           | Azure Private DNS linked to TestVNet1 |
+| Item                | Value                                       |
+| ------------------- | ------------------------------------------- |
+| Project name        | Azure Network Infrastructure Lab            |
+| Resource group      | TestGroup1                                  |
+| Primary VNet        | TestVNet1                                   |
+| Primary region      | West US                                     |
+| VNet address space  | 10.0.0.0/24                                 |
+| Remote access model | WireGuard VPN and SSH                       |
+| DNS model           | Azure Private DNS linked to TestVNet1       |
+| Storage model       | Linux NFS server hosted on TestLinuxServer1 |
 
 ## Network Layout
 
@@ -80,10 +81,11 @@ azure-network-infrastructure-lab/
 │   ├── vnet-subnet-design.md
 │   ├── nsg-asg-implementation.md
 │   ├── private-dns-implementation.md
-│   ├── reverse-dns-migration.md
-│   └── network-validation.md
+│   └── reverse-dns-migration.md
 │
 ├── storage/
+│   └── nfs-server-deployment.md
+│
 ├── deployment/
 ├── remote-access/
 ├── monitoring/
@@ -98,8 +100,6 @@ azure-network-infrastructure-lab/
 
 ## Current Documentation Status
 
-The current push focuses on the architecture and network foundation for the lab.
-
 Completed documentation includes:
 
 | Area         | Document                                |
@@ -111,8 +111,10 @@ Completed documentation includes:
 | Network      | `network/vnet-subnet-design.md`         |
 | Network      | `network/nsg-asg-implementation.md`     |
 | Network      | `network/private-dns-implementation.md` |
+| Network      | `network/reverse-dns-migration.md`      |
+| Storage      | `storage/nfs-server-deployment.md`      |
 
-Additional sections will be expanded as the storage, deployment, remote access, monitoring, operations, troubleshooting, evidence, scripts, and export documentation are completed.
+Additional sections will be expanded as the client storage integration, deployment, remote access, monitoring, operations, troubleshooting, evidence, scripts, and export documentation are completed.
 
 ## Evidence Standard
 
@@ -121,7 +123,7 @@ Screenshots are stored under the `screenshots/` directory and referenced from do
 Example:
 
 ```markdown
-*See Evidence:* [01-vnet-overview.png](../screenshots/network/01-vnet-overview.png)
+*See Evidence:* [01-vnet-overview.png](../screenshots/network/vnet-subnet-design/01-vnet-overview.png)
 ```
 
 Documentation should reference screenshots where they support configuration, validation, or design decisions.
@@ -138,7 +140,7 @@ Current document classes include:
 * Troubleshooting Template
 * Validation Template
 
-Architecture and network design documents use the Architecture Template unless a more specific template is required.
+Architecture and network design documents use the Architecture Template unless a more specific template is required. Storage, deployment, monitoring, and remote access implementation documents use the Build Guide Template unless a more specific template is required.
 
 ## Current Implementation Highlights
 
@@ -153,7 +155,10 @@ Current implemented and documented capabilities include:
 * NSG association by subnet role
 * ASG-based NFS rule intent
 * Current ASG state documentation
-* Evidence-backed portal screenshots
+* NFS server deployment on `TestLinuxServer1`
+* NFS export tree configuration under `/srv/nfs`
+* NFS export validation using `exportfs` and `showmount`
+* Evidence-backed portal and terminal screenshots
 * Internal name resolution validation
 
 ## Notes
