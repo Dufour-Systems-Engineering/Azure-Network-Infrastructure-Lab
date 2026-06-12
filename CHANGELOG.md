@@ -2,6 +2,70 @@
 
 All notable changes to the Azure Network Infrastructure Lab repository will be documented in this file.
 
+## 2026-06-12
+
+### Added
+
+* Added `storage/nfs-client-integration.md`.
+* Added `deployment/golden-image-management.md`.
+* Added `remote-access/wireguard-vpn-gateway.md`.
+* Added `operations/cost-control-operations.md`.
+* Added cost-control operations evidence screenshots under `screenshots/operations/cost-control-operations/`.
+
+### Storage
+
+* Documented client-side NFS package validation.
+* Documented active NFS mount verification.
+* Documented persistent `/etc/fstab` configuration.
+* Documented filesystem capacity validation.
+* Documented client directory access validation.
+* Documented client write validation.
+* Documented automount behavior validation.
+
+### Deployment
+
+* Documented golden image management workflow.
+* Documented managed image overview.
+* Documented validation VM deployment from image source.
+* Documented validation VM networking state.
+* Documented configuration validation from the deployed image.
+
+### Remote Access
+
+* Documented WireGuard VPN gateway deployment and configuration.
+* Documented WireGuard VM overview and network placement.
+* Documented Azure NIC IP forwarding requirement.
+* Documented WireGuard NSG rule configuration.
+* Documented WireGuard package and service validation.
+* Documented WireGuard interface status.
+* Documented UDP listening-port validation.
+* Documented server configuration review.
+* Documented VPN login and private IP SSH validation.
+
+### Operations
+
+* Documented cost-control procedures for the Azure lab.
+* Documented Azure Cost Management review.
+* Documented VM power-state inventory by region.
+* Documented VM deallocation workflow.
+* Documented deallocation verification.
+* Documented Azure Automation runbook schedule validation.
+* Documented delete-option and orphan-resource cleanup review.
+
+### Screenshots
+
+* Added six new cost-control operation screenshots.
+* Modified existing network screenshots to apply redactions for sensitive account or tenant information.
+* Updated existing screenshot filenames to align with the repository naming convention.
+* Replaced `screenshots/network/private-dns-implementation/07-vnet-connected-devices-reference.png` with `07-vnet-connected-devices.png`.
+* Replaced `screenshots/network/vnet-subnet-design/08-vnet-peerings.png` with `08-net-peerings.png`.
+
+### Notes
+
+* This update expands the repository beyond the initial architecture, network, and NFS server documentation.
+* Existing screenshots were cleaned up for consistency and redaction; the only new screenshot set added in this update was for cost-control operations.
+* Remaining high-priority documentation includes VM lifecycle management, batch client deployment, NFS exports and permissions, jumpbox administration workflow, and administrative command library.
+
 ## 2026-06-09
 
 ### Added
