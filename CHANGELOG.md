@@ -2,6 +2,45 @@
 
 All notable changes to the Azure Network Infrastructure Lab repository will be documented in this file.
 
+## 2026-06-16
+
+### Added
+
+* Added `command-codex/` as a root-level command reference system for the Azure Network Infrastructure Lab.
+* Added Azure CLI command reference documentation under `command-codex/azure-cli/`.
+* Added Bash/Linux command reference documentation under `command-codex/bash-linux/`.
+* Added PowerShell command reference documentation under `command-codex/powershell/`.
+* Added syntax reference documentation under `command-codex/syntax/`.
+* Added system-specific command documentation under `command-codex/system-specific/`.
+* Added Command Codex documentation for WireGuard, cost-control operations, and golden image management.
+* Added `storage/nfs-exports-and-permissions.md` documenting NFS export structure, `/etc/exports` configuration, active export validation, client mount validation, and elevated write testing.
+* Added NFS exports and permissions evidence screenshots under `screenshots/storage/nfs-exports-and-permissions/`.
+* Added WireGuard quick-connect evidence screenshots:
+
+  * `13-powershell-profile-quick-connect-function.png`
+  * `14-wireguard-quick-connect-login-validation.png`
+* Added repo setup scripts under `scripts/repo-setup/`.
+* Added command documentation templates:
+
+  * `templates/command-library-template.md`
+  * `templates/syntax-reference-template.md`
+
+### Changed
+
+* Updated `README.md` to include the Command Codex, NFS exports and permissions documentation, repo setup scripts, and command documentation templates.
+* Updated `command-codex/README.md` to describe the Command Codex purpose, folder roles, documentation model, command sources, redaction expectations, and relationship to other repository areas.
+* Updated `remote-access/wireguard-vpn-gateway.md` with a PowerShell `wgssh` quick-connect workflow for recurring administrative SSH access to the WireGuard gateway.
+* Expanded WireGuard prerequisites, validation, troubleshooting, lessons learned, and related documentation links.
+* Updated existing WireGuard evidence screenshots for VM overview, gateway login, and private IP SSH validation.
+* Updated repository documentation standards to include command library and syntax reference templates.
+
+### Notes
+
+* The WireGuard quick-connect workflow uses placeholder values for private key paths, usernames, and public IP addresses to avoid exposing sensitive administrative details.
+* NFS write validation is documented as elevated administrative write validation because the test used `sudo tee`.
+* Command Codex documentation is intended to explain commands actually used in the lab and preserve command understanding without overstating command-line proficiency.
+
+
 ## 2026-06-12
 
 ### Added

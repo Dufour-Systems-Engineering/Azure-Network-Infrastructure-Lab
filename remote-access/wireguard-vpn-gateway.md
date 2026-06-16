@@ -19,6 +19,7 @@ The WireGuard VPN gateway was implemented to:
 * Eliminate public management access to internal Linux servers.
 * Enable administration through private IP addressing.
 * Simulate remote-access patterns commonly used in production environments.
+* Provide a reusable administrative access point for recurring lab maintenance.
 
 ---
 
@@ -34,6 +35,8 @@ Before deployment, the following requirements were met:
 * SSH administrative access to the VM.
 * Azure Network Security Group permitting management access.
 * WireGuard client software installed on administrator workstations.
+* SSH key pair available for gateway authentication.
+* PowerShell available on the administrator workstation for optional quick-connect configuration.
 
 ---
 
@@ -80,6 +83,8 @@ IP forwarding allows the gateway to route traffic between VPN clients and Azure 
 A dedicated Network Security Group was assigned to the gateway.
 
 Inbound rules were configured to permit administrative access while maintaining a restricted attack surface.
+
+The gateway required inbound access for WireGuard VPN traffic and administrative SSH access from approved administrator source IP addresses.
 
 *See Evidence:* `05-wireguard-nsg-rules.png`
 
@@ -146,6 +151,52 @@ Validation confirmed:
 
 ---
 
+### 5. Configure PowerShell Quick-Connect Function
+
+A PowerShell quick-connect function was configured on the administrator workstation to simplify recurring SSH access to the WireGuard gateway.
+
+Instead of manually typing the full SSH command each time, the workstation profile was updated with a custom `wgssh` function.
+
+Example function format:
+
+```powershell
+function wgssh {
+    ssh -i "C:\Path\To\WireGuardVM1_key.pem" David@<WIREGUARD_PUBLIC_IP>
+}
+```
+
+This function uses the SSH private key and gateway public IP address to open an administrative session to the WireGuard VM.
+
+The PowerShell profile was checked and created if needed before making the function persistent:
+
+```powershell
+Test-Path $PROFILE
+```
+
+```powershell
+if (!(Test-Path -Path $PROFILE)) {
+    New-Item -ItemType File -Path $PROFILE -Force
+}
+```
+
+The profile was then opened for editing:
+
+```powershell
+notepad $PROFILE
+```
+
+After the function was saved to the profile, new PowerShell sessions could connect to the gateway by running:
+
+```powershell
+wgssh
+```
+
+This configuration was added after the original WireGuard deployment to reduce repetitive command entry during recurring lab administration.
+
+*See Evidence:* `13-powershell-profile-quick-connect-function.png`
+
+---
+
 ## Verification
 
 Validation testing confirmed the gateway was functioning as intended.
@@ -156,6 +207,8 @@ Administrative connectivity to the WireGuard gateway was verified using SSH over
 
 *See Evidence:* `11-vpn-gateway-login.png`
 
+---
+
 ### Internal Resource Access
 
 After connecting through the VPN gateway, administrative access to internal Azure resources was verified using private IP addressing.
@@ -163,6 +216,25 @@ After connecting through the VPN gateway, administrative access to internal Azur
 Successful SSH connectivity confirmed that traffic was correctly routed through the WireGuard tunnel.
 
 *See Evidence:* `12-private-ip-ssh-validation.png`
+
+---
+
+### PowerShell Quick-Connect Validation
+
+The PowerShell quick-connect workflow was validated from the administrator workstation.
+
+Validation confirmed:
+
+* The `wgssh` function existed in the PowerShell session.
+* The function pointed to the WireGuard gateway SSH command.
+* The PowerShell profile file existed or was created successfully.
+* Running `wgssh` initiated SSH access to the WireGuard gateway.
+* Successful login reached the Ubuntu shell on `WireGuardVM1`.
+* The gateway reported the expected private IP address on `eth0`.
+
+During validation, an initial SSH attempt timed out while access conditions were not yet ready. After the gateway was available and access was permitted, the same quick-connect function successfully opened an SSH session.
+
+*See Evidence:* `14-wireguard-quick-connect-login-validation.png`
 
 ---
 
@@ -211,8 +283,41 @@ Possible causes include:
 * Incorrect NSG rules.
 * Incorrect private IP address.
 * WireGuard tunnel disconnected.
+* Current administrator public IP not permitted by the SSH rule.
+* Incorrect SSH key path or username.
 
 Confirm both VPN connectivity and VM availability before troubleshooting application-level access.
+
+---
+
+### PowerShell Quick-Connect Function Does Not Work
+
+Possible causes include:
+
+* The function was not saved to the PowerShell profile.
+* PowerShell was not restarted after editing the profile.
+* The SSH key path changed.
+* The username or gateway IP address was entered incorrectly.
+* The WireGuard gateway VM was stopped.
+* SSH access was blocked by the Network Security Group.
+* The administrator source IP changed and no longer matched the SSH rule.
+
+Verify:
+
+```powershell
+Get-Command wgssh
+```
+
+```powershell
+Test-Path $PROFILE
+```
+
+Also confirm:
+
+* The profile contains the `wgssh` function.
+* The gateway VM is running.
+* The SSH NSG rule permits the current administrator source IP.
+* The SSH private key still exists at the configured path.
 
 ---
 
@@ -223,7 +328,16 @@ Confirm both VPN connectivity and VM availability before troubleshooting applica
 * Separating VPN infrastructure into a dedicated DMZ subnet simplifies network management.
 * Validation testing should include both VPN connectivity and internal resource access.
 * Private-only management significantly reduces the exposed attack surface of Azure virtual machines.
+* A PowerShell profile function can simplify recurring gateway access by reducing a full SSH command to a short reusable command.
+* Quick-connect functions are useful for lab administration, but published documentation should use placeholders for private key paths, usernames, and public IP addresses.
+* SSH access still depends on the VM power state, NSG rules, and current administrator source IP.
 
 ---
 
 ## Related Documents
+
+* [WireGuard Command Reference](../command-codex/system-specific/wireguard.md)
+* [Bash/Linux Command Reference](../command-codex/bash-linux/bash-linux.md)
+* [PowerShell Command Reference](../command-codex/powershell/powershell.md)
+* [Bash Syntax Reference](../command-codex/syntax/bash-syntax.md)
+* [PowerShell Syntax Reference](../command-codex/syntax/powershell-syntax.md)
