@@ -345,8 +345,6 @@ Current implemented and documented capabilities include:
 * Evidence-backed portal and terminal screenshots
 * Internal name resolution validation
 
----
-
 ## Notes
 
 This lab is designed as an engineering portfolio and learning environment.
