@@ -1,6 +1,33 @@
 # Changelog
 
 All notable changes to the Azure Network Infrastructure Lab repository will be documented in this file.
+## 2026-06-21
+
+### Added
+
+* Added the Governance v1.0 framework under the new `governance/` directory, including repository governance, principles, workflow, style guide, document standards, publication quality gate, decision log, audit log, and supporting documentation.
+* Added `monitoring/netmonvm1-overview.md`.
+* Added `remote-access/jumpbox-administration-workflow.md`.
+* Added `troubleshooting/nfs-mount-permission-denied.md`.
+* Added supporting screenshot evidence for the NetMon overview, jumpbox administration workflow, and NFS troubleshooting documentation.
+
+### Changed
+
+* Updated `README.md` to reflect the current repository structure, documentation status, governance framework, implementation highlights, and Phase 1 progress.
+* Updated `templates/section-template-repo.md` to clarify that templates are selected according to document purpose rather than repository location.
+* Expanded repository governance to formalize documentation standards, publication requirements, repository workflow, and lifecycle guidance.
+* Refined repository documentation standards to distinguish governance documents from static technical documentation.
+
+### Notes
+
+Phase 1 remains in progress.
+
+The remaining major Phase 1 documentation objectives are:
+
+* `deployment/batch-client-deployment.md`
+* `operations/vm-lifecycle-management.md`
+
+These documents are intentionally being completed after the environment has been prepared to allow comprehensive evidence collection rather than reconstruction from historical implementation.
 
 ## 2026-06-16
 

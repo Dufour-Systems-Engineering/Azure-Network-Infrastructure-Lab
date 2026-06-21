@@ -1,14 +1,7 @@
-Agreed.
+## Section Template Guide
 
-The AD repo taught us a painful lesson:
+Templates are selected according to the document's purpose, not its repository location. Repository folders classify subject matter. Templates classify documentation type. A single folder may legitimately contain documents created from multiple approved templates.
 
-> Standardize first. Write second.
-
-Otherwise you end up rewriting dozens of documents later.
-
-For the Azure repo, I would establish **five official document classes** and forbid ad-hoc formats.
-
----
 
 # 1. Architecture Template
 
@@ -21,7 +14,7 @@ network/
 
 Examples:
 
-* Environment Overview
+* Environment or Resource Overview Documents (VMs, VNets, Subnets, etc)
 * VNet Design
 * Security Model
 * IP Addressing Plan

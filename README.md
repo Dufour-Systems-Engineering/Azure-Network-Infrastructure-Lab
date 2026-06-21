@@ -110,7 +110,19 @@ azure-network-infrastructure-lab/
 │
 ├── exports/
 │
+├── governance/
+│   ├── README.md
+│   ├── document-standards-manual.md
+│   ├── publication-quality-gate.md
+│   ├── repository-audit-log.md
+│   ├── repository-decision-log.md
+│   ├── repository-governance.md
+│   ├── repository-principles.md
+│   ├── repository-style-guide.md
+│   └── repository-workflow.md
+│
 ├── monitoring/
+│   └── netmonvm1-overview.md
 │
 ├── network/
 │   ├── nsg-asg-implementation.md
@@ -122,6 +134,7 @@ azure-network-infrastructure-lab/
 │   └── cost-control-operations.md
 │
 ├── remote-access/
+│   ├── jumpbox-administration-workflow.md
 │   └── wireguard-vpn-gateway.md
 │
 ├── screenshots/
@@ -138,43 +151,66 @@ azure-network-infrastructure-lab/
 │
 ├── templates/
 │   ├── command-library-template.md
+│   ├── section-template-repo.md
 │   └── syntax-reference-template.md
 │
 └── troubleshooting/
+    └── nfs-mount-permission-denied.md
+
+Only representative files are shown where appropriate. Screenshot directories contain additional evidence organized by subsystem.
 ```
 
 ## Current Documentation Status
 
 Completed documentation includes:
 
-| Area          | Document                                                   |
-| ------------- | ---------------------------------------------------------- |
-| Architecture  | `architecture/environment-overview.md`                     |
-| Architecture  | `architecture/ip-addressing-plan.md`                       |
-| Architecture  | `architecture/logical-topology.md`                         |
-| Architecture  | `architecture/security-model.md`                           |
-| Command Codex | `command-codex/README.md`                                  |
-| Command Codex | `command-codex/azure-cli/azure-cli.md`                     |
-| Command Codex | `command-codex/bash-linux/bash-linux.md`                   |
-| Command Codex | `command-codex/powershell/powershell.md`                   |
-| Command Codex | `command-codex/syntax/azure-cli-query-syntax.md`           |
-| Command Codex | `command-codex/syntax/bash-syntax.md`                      |
-| Command Codex | `command-codex/syntax/powershell-syntax.md`                |
-| Command Codex | `command-codex/system-specific/cost-control-ops.md`        |
-| Command Codex | `command-codex/system-specific/golden-image-management.md` |
-| Command Codex | `command-codex/system-specific/wireguard.md`               |
-| Deployment    | `deployment/golden-image-management.md`                    |
-| Network       | `network/nsg-asg-implementation.md`                        |
-| Network       | `network/private-dns-implementation.md`                    |
-| Network       | `network/reverse-dns-migration.md`                         |
-| Network       | `network/vnet-subnet-design.md`                            |
-| Operations    | `operations/cost-control-operations.md`                    |
-| Remote Access | `remote-access/wireguard-vpn-gateway.md`                   |
-| Storage       | `storage/nfs-client-integration.md`                        |
-| Storage       | `storage/nfs-exports-and-permissions.md`                   |
-| Storage       | `storage/nfs-server-deployment.md`                         |
+| Area            | Document                                                   |
+| --------------- | ---------------------------------------------------------- |
+| Architecture    | `architecture/environment-overview.md`                     |
+| Architecture    | `architecture/ip-addressing-plan.md`                       |
+| Architecture    | `architecture/logical-topology.md`                         |
+| Architecture    | `architecture/security-model.md`                           |
+| Command Codex   | `command-codex/README.md`                                  |
+| Command Codex   | `command-codex/azure-cli/azure-cli.md`                     |
+| Command Codex   | `command-codex/bash-linux/bash-linux.md`                   |
+| Command Codex   | `command-codex/powershell/powershell.md`                   |
+| Command Codex   | `command-codex/syntax/azure-cli-query-syntax.md`           |
+| Command Codex   | `command-codex/syntax/bash-syntax.md`                      |
+| Command Codex   | `command-codex/syntax/powershell-syntax.md`                |
+| Command Codex   | `command-codex/system-specific/cost-control-ops.md`        |
+| Command Codex   | `command-codex/system-specific/golden-image-management.md` |
+| Command Codex   | `command-codex/system-specific/wireguard.md`               |
+| Deployment      | `deployment/golden-image-management.md`                    |
+| Governance      | `governance/README.md`                                     |
+| Governance      | `governance/repository-governance.md`                      |
+| Governance      | `governance/repository-principles.md`                      |
+| Governance      | `governance/repository-style-guide.md`                     |
+| Governance      | `governance/document-standards-manual.md`                  |
+| Governance      | `governance/repository-workflow.md`                        |
+| Governance      | `governance/publication-quality-gate.md`                   |
+| Governance      | `governance/repository-decision-log.md`                    |
+| Governance      | `governance/repository-audit-log.md`                       |
+| Monitoring      | `monitoring/netmonvm1-overview.md`                         |
+| Network         | `network/nsg-asg-implementation.md`                        |
+| Network         | `network/private-dns-implementation.md`                    |
+| Network         | `network/reverse-dns-migration.md`                         |
+| Network         | `network/vnet-subnet-design.md`                            |
+| Operations      | `operations/cost-control-operations.md`                    |
+| Remote Access   | `remote-access/wireguard-vpn-gateway.md`                   |
+| Remote Access   | `remote-access/jumpbox-administration-workflow.md`         |
+| Storage         | `storage/nfs-client-integration.md`                        |
+| Storage         | `storage/nfs-exports-and-permissions.md`                   |
+| Storage         | `storage/nfs-server-deployment.md`                         |
+| Troubleshooting | `troubleshooting/nfs-mount-permission-denied.md`           |
 
-Additional sections will be expanded as batch deployment, VM lifecycle management, jumpbox administration, monitoring, troubleshooting, evidence, scripts, and export documentation are completed.
+Phase 1 documentation remains in progress.
+
+Remaining high-priority documentation includes:
+
+* `deployment/batch-client-deployment.md`
+* `operations/vm-lifecycle-management.md`
+
+Additional documentation will continue to be published as Phase 1 development progresses, with primary emphasis on batch client deployment and virtual machine lifecycle management.
 
 ## Command Codex
 
@@ -238,7 +274,7 @@ Existing screenshots are periodically renamed or redacted to keep the evidence s
 
 ## Documentation Standards
 
-This repository uses standardized document templates to keep formatting consistent.
+This repository uses standardized document templates to maintain consistency across all published documentation.
 
 Current document classes include:
 
@@ -250,9 +286,9 @@ Current document classes include:
 * Command Library Template
 * Syntax Reference Template
 
-Architecture and network design documents use the Architecture Template unless a more specific template is required.
+Templates are selected according to the **purpose of the document**, not its repository location.
 
-Storage, deployment, monitoring, and remote access implementation documents use the Build Guide Template unless a more specific template is required.
+Repository folders organize subject matter while templates define document structure. A single repository folder may therefore contain documents created from multiple approved templates when appropriate.
 
 Operations documents use the Runbook Template.
 
@@ -265,17 +301,31 @@ Current template files include:
 | Template                                 | Purpose                                           |
 | ---------------------------------------- | ------------------------------------------------- |
 | `templates/command-library-template.md`  | Standard format for command reference documents.  |
+| `templates/section-template-repo.md`     | Standard format for repository documentation.     |
 | `templates/syntax-reference-template.md` | Standard format for syntax explanation documents. |
+
+## Repository Governance
+
+This repository is governed by a documentation framework intended to promote consistency, maintainability, and engineering quality.
+
+The Governance framework establishes repository standards, document templates, workflow expectations, publication requirements, and repository-wide design decisions.
+
+All published documentation is expected to conform to the repository Governance framework, ensuring consistency, maintainability, and engineering quality throughout the project.
 
 ## Current Implementation Highlights
 
 Current implemented and documented capabilities include:
 
-* Segmented Azure VNet design
+* Repository governance framework and publication standards
+* Publication Quality Gate
+* Standardized documentation templates
+* Command Codex for Azure CLI, Bash/Linux, PowerShell, and system-specific operations
+* Segmented Azure Virtual Network design
 * Dedicated subnets for infrastructure, clients, remote access, and monitoring
 * WireGuard VPN gateway in a DMZ-style subnet
 * WireGuard remote access validation from an external workstation to internal private IPs
 * PowerShell `wgssh` quick-connect function for recurring WireGuard gateway administration
+* Jumpbox administration workflow
 * Azure Private DNS forward and reverse lookup zones
 * Private DNS virtual network links
 * DNS lookup validation from multiple subnets
@@ -286,19 +336,24 @@ Current implemented and documented capabilities include:
 * NFS export tree configuration under `/srv/nfs`
 * NFS export validation using `exportfs` and `showmount`
 * NFS client integration using persistent mount configuration
-* Client-side NFS validation through active mount, filesystem, directory, write, and automount checks
 * NFS export and permissions validation using `/etc/exports`, `exportfs`, `findmnt`, `df`, and elevated write testing
+* NFS mount permission troubleshooting with documented root-cause analysis
+* Dedicated NetMon monitoring platform overview
 * Golden image creation and validation workflow
 * VM deployment validation from managed image source
 * Azure cost-control operations using power-state inventory, deallocation, scheduled shutdown, and cleanup review
-* Command Codex documentation for Azure CLI, Bash/Linux, PowerShell, WireGuard, cost control, golden image management, and syntax references
 * Evidence-backed portal and terminal screenshots
 * Internal name resolution validation
 
+---
+
 ## Notes
 
-This lab is designed as a learning and portfolio environment.
+This lab is designed as an engineering portfolio and learning environment.
 
-The environment prioritizes practical implementation, clear documentation, cost control, command understanding, and hands-on Azure/Linux infrastructure administration.
+The environment prioritizes practical implementation, engineering documentation, governance, cost control, command understanding, and hands-on Azure/Linux infrastructure administration.
+
+Phase 1 documentation remains in active development. Remaining high-priority documentation includes batch client deployment and virtual machine lifecycle management.
 
 Production hardening, compliance controls, and enterprise-scale availability patterns are outside the current scope unless specifically documented in future sections.
+
