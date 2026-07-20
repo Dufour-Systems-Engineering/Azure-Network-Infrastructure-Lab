@@ -1,0 +1,52 @@
+AZURE NETWORK INFRASTRUCTURE LAB
+SANITIZED POWERSHELL EVIDENCE EXCERPT
+
+Artifact: Phase 2 client VM deployment troubleshooting
+Source: Private PowerShell transcript captured June 27, 2026
+Evidence type: Executed Azure CLI commands, What-If result, and deployment error
+
+SANITIZATION NOTICE
+
+This public artifact is a curated excerpt from the original private transcript.
+The original transcript remains unchanged and is not intended for publication.
+Workstation headers, local paths, account information, subscription identifiers,
+plaintext credentials, duplicate per-VM errors, unrelated commands, and repeated
+attempts were omitted or redacted. Redacted values are represented by descriptive
+angle-bracket placeholders. Azure's wrapped error output was normalized for
+readability without changing the error text.
+
+======================================================================
+RESOLVE AZURE COMPUTE GALLERY IMAGE VERSION ID
+======================================================================
+
+PS> $sharedGalleryImageId = az sig image-version show --resource-group TestGroup1 --gallery-name BatchTestGallery2 --gallery-image-definition BatchTestImage2 --gallery-image-version 1.0.0 --query id --output tsv
+
+PS> $sharedGalleryImageId
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/TestGroup1/providers/Microsoft.Compute/galleries/BatchTestGallery2/images/BatchTestImage2/versions/1.0.0
+
+======================================================================
+DEPLOYMENT WHAT-IF
+======================================================================
+
+PS> $rg = "BatchTestResGroup2"
+PS> $tf = "./main.bicep"
+
+PS> az deployment group what-if --resource-group $rg --template-file $tf --parameters sharedGalleryImageId=$sharedGalleryImageId adminPassword=<REDACTED-PASSWORD>
+
+Resource changes: 15 to create.
+
+======================================================================
+DEPLOYMENT ATTEMPT AND FAILURE
+======================================================================
+
+PS> az deployment group create --resource-group BatchTestResGroup2 --template-file ./main.bicep --parameters sharedGalleryImageId=$sharedGalleryImageId adminPassword=<REDACTED-PASSWORD>
+
+At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.
+
+Code: BadRequest
+Message: The shared gallery image reference id provided, '/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/TestGroup1/providers/Microsoft.Compute/galleries/BatchTestGallery2/images/BatchTestImage2/versions/1.0.0', is invalid.
+
+The same BadRequest message was returned for each client VM resource in the batch.
+Duplicate messages were omitted from this public excerpt.
+
+END OF SANITIZED EXCERPT

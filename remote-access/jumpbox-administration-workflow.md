@@ -2,134 +2,107 @@
 
 ## Overview
 
-This document explains how `WireGuardVM1` is used as the administrative jumpbox for the Azure Network Infrastructure Lab.
+This document records the validated SSH jumpbox workflow used with `WireGuardVM1` before direct one-hop VPN administration was completed.
 
-`WireGuardVM1` provides a controlled remote access point into the private Azure lab network without relying on Azure Bastion. The administrator first connects to `WireGuardVM1`, then uses that VM as the access point for reaching internal lab systems by private IP address or private DNS name.
-
-This document does not rebuild the WireGuard VPN gateway. The VPN gateway deployment, WireGuard service configuration, and tunnel setup are covered in the WireGuard VPN Gateway documentation. This document focuses on the administrative workflow after the gateway exists.
-
-The validated access pattern for this document is:
+The validated path was:
 
 ```text
-Admin workstation → SSH to WireGuardVM1 → SSH/ping internal Azure resources from WireGuardVM1
+Local Windows workstation
+    -> public SSH connection
+    -> WireGuardVM1
+    -> private SSH, ping, or DNS request
+    -> internal Azure resource
 ```
 
-Internal pings and private DNS tests shown in this document are performed from `WireGuardVM1`. They prove jumpbox-to-internal-resource reachability, not direct laptop-to-VNet ping access.
+This workflow did not require the local workstation to establish a functioning WireGuard tunnel. Internal tests performed after signing in to `WireGuardVM1` originated from the jumpbox and must not be presented as direct workstation-to-VNet evidence.
+
+The workflow remains available as an alternate or fallback administrative path. The later primary one-hop VPN workflow is documented in [WireGuard VPN Server Completion and One-Hop Administration](wireguard-vpn-server-completion-and-one-hop-access.md).
 
 ## Purpose
 
-The purpose of this workflow is to provide a repeatable method for remotely administering private Azure VMs while controlling cost and limiting public exposure.
+The jumpbox workflow provided a repeatable method for administering private Azure resources while limiting public management exposure.
 
-The jumpbox workflow supports:
+It supported:
 
-* Secure administrative entry into `TestVNet1`.
-* Private IP access to internal Linux VMs.
-* Private DNS access to internal Linux VMs.
-* Reduced dependence on Azure Bastion.
-* Cost control by starting `WireGuardVM1` only when needed.
-* Dynamic SSH access updates when the local public IP changes.
-* Centralized access path for validation, troubleshooting, and maintenance.
+- A single controlled public SSH entry point.
+- Private IP administration of internal Linux VMs.
+- Private DNS testing from inside `TestVNet1`.
+- Reachability validation from the remote-access subnet.
+- Reduced dependence on Azure Bastion.
+- Cost control by starting the VM only when required and deallocating it afterward.
 
 ## Prerequisites
 
-The following items must already exist before using this workflow:
+The workflow requires:
 
-* Resource group: `TestGroup1`
-* VNet: `TestVNet1`
-* WireGuard VM: `WireGuardVM1`
-* WireGuard subnet: `DMZ-Subnet`
-* WireGuard VM private IP: `10.0.0.36`
-* WireGuard VM public IP or DNS name: `<WIREGUARD_PUBLIC_IP_OR_DNS>`
-* NSG: `WireGuardNSG1`
-* WireGuard UDP inbound rule: allow UDP `51820`
-* SSH inbound rule: allow TCP `22` from the current admin public IP
-* Azure CLI installed on the admin workstation
-* Azure CLI authenticated with access to the lab subscription
-* SSH client installed on the admin workstation
-* Valid SSH key or credential for `WireGuardVM1`
-* Internal VM NSG rules allowing management traffic from the VNet or jumpbox path
+- Resource group: `TestGroup1`
+- VNet: `TestVNet1`
+- Jumpbox: `WireGuardVM1`
+- Subnet: `DMZ-Subnet`
+- Jumpbox private IP: `10.0.0.36`
+- NSG: `WireGuardNSG1`
+- A public IP address or DNS name for `WireGuardVM1`
+- TCP `22` allowed from the administrator's current public IP
+- Azure CLI authenticated to the correct subscription when CLI lifecycle commands are used
+- An SSH client on the administrator workstation
+- A valid SSH identity or credential for `WireGuardVM1`
+- Internal NSG and host-firewall rules permitting the required traffic from the jumpbox path
+- Private DNS integration when hostname-based access is required
 
-The WireGuard VM must also have:
+This jumpbox workflow does not require:
 
-* WireGuard installed and configured.
-* `wg-quick@wg0` enabled or available to start.
-* Linux IP forwarding enabled.
-* Azure NIC IP forwarding enabled.
-* Correct route table behavior for return traffic from internal subnets.
-* Private DNS integration configured if hostname-based access is used.
+- An inbound UDP `51820` rule.
+- A WireGuard handshake.
+- A Windows WireGuard peer configuration.
+- WireGuard `AllowedIPs` routes on the workstation.
+- A route from the workstation into the Azure VNet.
 
-Running `az login` authenticates the workstation to Azure Resource Manager. It does not place the workstation inside `TestVNet1` and does not create private network reachability by itself.
+Running `az login` provides Azure management-plane authentication. It does not place the workstation inside `TestVNet1` or create private network reachability.
 
 ## Deployment Procedure
 
 ### 1. Confirm WireGuardVM1 Exists
 
-Open the Azure portal and browse to:
+Confirm that `WireGuardVM1` exists in `TestGroup1` and is associated with the intended network resources.
 
-```text
-Azure Portal → Virtual machines → WireGuardVM1 → Overview
-```
-
-Confirm that `WireGuardVM1` exists in `TestGroup1`, is assigned to the expected region, and is associated with the expected network resources.
-
-*See Evidence:* [WireGuard VM overview](../screenshots/remote-access/jumpbox-administration-workflow/01-wireguard-vm-overview.png)
-
-The lower portion of the VM overview confirms the VM size, disk details, and auto-shutdown configuration used for cost control.
-
-*See Evidence:* [WireGuard VM overview bottom properties](../screenshots/remote-access/jumpbox-administration-workflow/02-wireguard-vm-overview-bottom.png)
+See Evidence: [WireGuard VM overview](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/01-wireguard-vm-overview.png)
 
 ### 2. Confirm Network Placement
 
-Open the network settings for `WireGuardVM1` and confirm the VM is attached to the expected subnet, private IP address, and network security group.
-
-Confirmed network placement:
+Confirm the following placement:
 
 ```text
 Virtual network: TestVNet1
 Subnet: DMZ-Subnet
-Private IP address: 10.0.0.36
+Private IP: 10.0.0.36
 Network security group: WireGuardNSG1
 ```
 
-This confirms that `WireGuardVM1` is placed in the dedicated remote-access subnet instead of the internal server or client subnets.
+See Evidence: [WireGuard network settings](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/03-wireguard-network-settings.png)
 
-*See Evidence:* [WireGuard network settings](../screenshots/remote-access/jumpbox-administration-workflow/03-wireguard-network-settings.png)
+### 3. Confirm the SSH NSG Rule
 
-### 3. Confirm Azure NIC IP Forwarding
+Confirm that `WireGuardNSG1` allows inbound TCP `22` from the current trusted administrator address. The internal VMs do not require their own public SSH endpoints for this workflow.
 
-Open the network interface attached to `WireGuardVM1` and confirm that IP forwarding is enabled.
+See Evidence: [WireGuard NSG rules](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/05-wireguard-nsg-rules.png)
 
-Azure-side IP forwarding is required because the VM is being used as a routing point between WireGuard traffic and internal Azure private network paths.
+### 4. Authenticate to Azure CLI
 
-*See Evidence:* [WireGuard IP forwarding enabled](../screenshots/remote-access/jumpbox-administration-workflow/04-wireguard-ip-forwarding.png)
-
-### 4. Confirm NSG Administrative Access Rule
-
-Open `WireGuardNSG1` and review the inbound security rules.
-
-The SSH rule allows administrative access to `WireGuardVM1` through TCP port `22`. The rule should be restricted to the current trusted administrative source IP instead of being left open broadly.
-
-*See Evidence:* [WireGuard NSG rules](../screenshots/remote-access/jumpbox-administration-workflow/05-wireguard-nsg-rules.png)
-
-### 5. Authenticate to Azure CLI
-
-From the admin workstation, authenticate to Azure CLI:
+When Azure CLI is used to manage the VM lifecycle, authenticate and confirm the correct subscription:
 
 ```powershell
 az login
 ```
 
-Confirm the correct subscription is selected before starting, stopping, or validating VM state.
+### 5. Start WireGuardVM1
 
-### 6. Start WireGuardVM1 if Needed
-
-If the jumpbox is stopped or deallocated, start it before connecting:
+Start the VM if it is stopped or deallocated:
 
 ```powershell
 az vm start --resource-group TestGroup1 --name WireGuardVM1
 ```
 
-After the VM starts, verify the power state if needed:
+Verify its power state:
 
 ```powershell
 az vm show --resource-group TestGroup1 --name WireGuardVM1 --show-details --query powerState --output tsv
@@ -141,11 +114,9 @@ Expected result:
 VM running
 ```
 
-### 7. Update SSH NSG Rule for Current Public IP
+### 6. Update the SSH Source Address if Necessary
 
-The admin workstation may receive a different public IP from the ISP over time. If the SSH NSG rule still points to an old public IP, direct SSH to `WireGuardVM1` can fail.
-
-Update the SSH rule with the current public IP before connecting:
+If the administrator's public address has changed, update the existing SSH rule before connecting. The retained workflow used:
 
 ```bash
 curl -s ifconfig.me | xargs -I {} az network nsg rule update \
@@ -155,274 +126,31 @@ curl -s ifconfig.me | xargs -I {} az network nsg rule update \
   --source-address-prefixes {}
 ```
 
-This command fetches the current public IP and updates the SSH inbound rule in `WireGuardNSG1`.
+### 7. Connect to the Jumpbox
 
-### 8. Connect to WireGuardVM1 by SSH
-
-Connect to the jumpbox using SSH:
+Open an SSH session to the public endpoint:
 
 ```powershell
 ssh -i "<PATH_TO_PRIVATE_KEY>" <ADMIN_USER>@<WIREGUARD_PUBLIC_IP_OR_DNS>
 ```
 
-Example placeholder:
-
-```powershell
-ssh -i "C:\Path\To\WireGuardVM1_key.pem" <ADMIN_USER>@<WIREGUARD_PUBLIC_IP_OR_DNS>
-```
-
-Do not store real key paths, usernames, public IP addresses, or private keys in published documentation.
-
-*See Evidence:* [VPN gateway login](../screenshots/remote-access/jumpbox-administration-workflow/11-vpn-gateway-login.png)
+See Evidence: [Jumpbox SSH login](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/11-vpn-gateway-login.png)
 
 ## Configuration Procedure
 
-### WireGuardVM1 Role
+### Administer an Internal VM by Private IP
 
-`WireGuardVM1` functions as the remote administration entry point for the lab.
-
-It provides:
-
-* Public-facing access point for controlled SSH access.
-* WireGuard gateway functionality for VPN use cases.
-* Private network path into `TestVNet1`.
-* A controlled alternative to Azure Bastion.
-
-### Network Placement
-
-`WireGuardVM1` is placed in the DMZ subnet.
-
-```text
-VNet: TestVNet1
-Subnet: DMZ-Subnet
-Jumpbox private IP: 10.0.0.36
-Tunnel network: 10.6.0.0/24
-Internal VNet range: 10.0.0.0/24
-```
-
-*See Evidence:* [WireGuard network settings](../screenshots/remote-access/jumpbox-administration-workflow/03-wireguard-network-settings.png)
-
-### Required Azure Settings
-
-`WireGuardVM1` requires the following Azure-side settings:
-
-```text
-NIC IP forwarding: Enabled
-NSG inbound UDP 51820: Allowed
-NSG inbound TCP 22: Allowed from current admin public IP
-Route table: Internal return traffic routes back through WireGuardVM1 where required
-```
-
-*See Evidence:* [WireGuard IP forwarding enabled](../screenshots/remote-access/jumpbox-administration-workflow/04-wireguard-ip-forwarding.png)
-
-*See Evidence:* [WireGuard NSG rules](../screenshots/remote-access/jumpbox-administration-workflow/05-wireguard-nsg-rules.png)
-
-### Required Linux Settings
-
-`WireGuardVM1` requires Linux IP forwarding.
+From the active shell on `WireGuardVM1`, connect to an internal VM:
 
 ```bash
-echo 'net.ipv4.ip_forward=1' | sudo tee /etc/sysctl.d/99-wg.conf
-sudo sysctl --system
+ssh <INTERNAL_ADMIN_USER>@<INTERNAL_PRIVATE_IP>
 ```
 
-The WireGuard service should be available through systemd:
+The internal connection traverses the Azure VNet and does not require a public IP on the target VM.
 
-```bash
-sudo systemctl status wg-quick@wg0
-```
+### Validate Internal Reachability
 
-### Validate WireGuard Installation
-
-After logging into `WireGuardVM1`, confirm WireGuard and WireGuard tools are installed:
-
-```bash
-dpkg -l | grep wireguard
-```
-
-or:
-
-```bash
-apt list --installed | grep wireguard
-```
-
-*See Evidence:* [WireGuard installation validation](../screenshots/remote-access/jumpbox-administration-workflow/06-wireguard-installation-validation.png)
-
-### Validate WireGuard Service State
-
-Confirm the WireGuard service is enabled and active:
-
-```bash
-sudo systemctl status wg-quick@wg0
-```
-
-*See Evidence:* [WireGuard service status](../screenshots/remote-access/jumpbox-administration-workflow/07-wireguard-service-status.png)
-
-### Validate WireGuard Interface
-
-Confirm the WireGuard interface exists:
-
-```bash
-sudo wg
-```
-
-The output should show interface `wg0` and the configured listening port.
-
-*See Evidence:* [WireGuard interface status](../screenshots/remote-access/jumpbox-administration-workflow/08-wireguard-interface-status.png)
-
-### Validate WireGuard Listening Port
-
-Confirm the VM is listening on WireGuard’s UDP port:
-
-```bash
-sudo ss -uulpn
-```
-
-The output should show WireGuard listening on port `51820`.
-
-*See Evidence:* [WireGuard listening port](../screenshots/remote-access/jumpbox-administration-workflow/09-wireguard-listening-port.png)
-
-### Validate WireGuard Server Configuration
-
-Review the WireGuard server configuration:
-
-```bash
-sudo cat /etc/wireguard/wg0.conf
-```
-
-The configuration should show:
-
-```text
-Interface address: 10.6.0.1/24
-Listen port: 51820
-Peer AllowedIPs: 10.6.0.2/32
-Forwarding/NAT rules
-```
-
-Sensitive key material must remain redacted in screenshots and documentation.
-
-*See Evidence:* [WireGuard server configuration](../screenshots/remote-access/jumpbox-administration-workflow/10-wireguard-server-configuration.png)
-
-### Client Split-Tunnel Configuration
-
-The admin workstation can use split-tunnel routing for lab access when the WireGuard client is being used for direct VPN access.
-
-Example split-tunnel peer configuration:
-
-```ini
-[Peer]
-AllowedIPs = 10.0.0.0/24
-```
-
-This routes Azure lab traffic through the WireGuard tunnel while leaving normal internet traffic on the local network.
-
-This document does not rely on laptop-originated ping evidence. The verified workflow for this article is jumpbox-based administration:
-
-```text
-Admin workstation → SSH to WireGuardVM1 → internal administration from WireGuardVM1
-```
-
-### Optional PowerShell Quick-Connect Function
-
-A local PowerShell helper function can be used to reduce repetitive typing when connecting to `WireGuardVM1`.
-
-Example function format:
-
-```powershell
-function wgssh {
-    ssh -i "<PATH_TO_PRIVATE_KEY>" <ADMIN_USER>@<WIREGUARD_PUBLIC_IP_OR_DNS>
-}
-```
-
-This function is an administrative convenience only. It does not replace the underlying SSH, NSG, or VM state requirements.
-
-*See Evidence:* [PowerShell profile quick-connect function](../screenshots/remote-access/jumpbox-administration-workflow/13-powershell-profile-quick-connect-function.png)
-
-The quick-connect function was validated by successfully opening an SSH session to `WireGuardVM1`.
-
-*See Evidence:* [WireGuard quick-connect login validation](../screenshots/remote-access/jumpbox-administration-workflow/14-wireguard-quick-connect-login-validation.png)
-
-### Optional Quick-Access Batch File
-
-A Windows batch file was drafted to combine the start, NSG update, SSH connection, and shutdown sequence.
-
-Because this workflow was not validated end-to-end, it should be documented as a future administrative convenience, not as the primary confirmed access method.
-
-Example placeholder structure:
-
-```bat
-@echo off
-az vm start --resource-group TestGroup1 --name WireGuardVM1
-timeout /t 40
-curl -s ifconfig.me | xargs -I {} az network nsg rule update --resource-group TestGroup1 --nsg-name WireGuardNSG1 --name SSH --source-address-prefixes {}
-ssh <ADMIN_USER>@<WIREGUARD_PUBLIC_IP_OR_DNS>
-az vm deallocate --resource-group TestGroup1 --name WireGuardVM1
-```
-
-This script should not be treated as production-ready until it has been tested and confirmed.
-
-## Verification
-
-### Verify WireGuardVM1 Power State
-
-Verify the power state of `WireGuardVM1`:
-
-```powershell
-az vm show `
-  --resource-group TestGroup1 `
-  --name WireGuardVM1 `
-  --show-details `
-  --query powerState `
-  --output tsv
-```
-
-Expected result while using the jumpbox:
-
-```text
-VM running
-```
-
-*See Evidence:* [WireGuard VM overview](../screenshots/remote-access/jumpbox-administration-workflow/01-wireguard-vm-overview.png)
-
-### Verify Jumpbox SSH Access
-
-The admin workstation successfully established an SSH session to `WireGuardVM1`.
-
-This validates the first stage of the workflow:
-
-```text
-Admin workstation → WireGuardVM1
-```
-
-*See Evidence:* [VPN gateway login](../screenshots/remote-access/jumpbox-administration-workflow/11-vpn-gateway-login.png)
-
-### Verify Private IP SSH from Jumpbox to Internal VM
-
-From an active SSH session on `WireGuardVM1`, the administrator successfully opened an SSH session to `TestLinuxServer1`.
-
-This validates the second stage of the workflow:
-
-```text
-WireGuardVM1 → internal Azure VM
-```
-
-The connection uses the internal private network path rather than public exposure of the internal server.
-
-*See Evidence:* [Private IP SSH validation](../screenshots/remote-access/jumpbox-administration-workflow/12-private-ip-ssh-validation.png)
-
-### Verify Internal Network Reachability from Jumpbox
-
-Internal reachability was tested from `WireGuardVM1` using a Bash loop that pinged multiple private IP addresses in the lab.
-
-Example command:
-
-```bash
-for i in 4 21 22 23 24 25 26 27; do
-  ping -c 2 -W 2 "10.0.0.$i" >/dev/null && echo "10.0.0.$i reachable" || echo "10.0.0.$i unreachable"
-done
-```
-
-A labeled version was also used for clearer evidence:
+The retained workflow used a labeled loop from `WireGuardVM1` to test multiple private addresses:
 
 ```bash
 for host in \
@@ -432,204 +160,171 @@ for host in \
 "TestClientVM3 10.0.0.23" \
 "TestClientVM4 10.0.0.24" \
 "TestClientVM5 10.0.0.25" \
-"TestClientVM6 10.0.0.26" \
-"NetMonVM1 10.0.0.27"; do
+"TestClientVM6 10.0.0.26"; do
   name=$(echo "$host" | awk '{print $1}')
   ip=$(echo "$host" | awk '{print $2}')
   ping -c 2 -W 2 "$ip" >/dev/null && echo "$name ($ip): reachable" || echo "$name ($ip): unreachable"
 done
 ```
 
-This validation proves reachability from the jumpbox to internal lab systems. It does not prove direct laptop-to-VNet ping access.
+The earlier document listed `NetMonVM1` at `10.0.0.27`. The later confirmed environment records `NetMonVM1` at `10.0.0.132`, so the obsolete address is not retained in the current command example.
 
-The screenshot shows successful reachability to `TestLinuxServer1` and the active client VM private IP addresses. `NetMonVM1` was unreachable during this capture, so this screenshot is used as evidence of jumpbox-to-active-system reachability rather than full-network availability.
+### Validate Private DNS
 
-*See Evidence:* [Internal network reachability from jumpbox](../screenshots/remote-access/jumpbox-administration-workflow/15-internal-network-reachability-from-jumpbox.png)
+The private DNS zone `vnet-dns.lab` contained forward A records for the six client VMs, `TestLinuxServer1`, `NetMonVM1`, and `WireGuardVM1`. The record inventory was reviewed in the Azure portal before testing.
 
-### Verify Private DNS Access from Jumpbox
-
-Private DNS was validated from `WireGuardVM1` by resolving `testlinuxserver1.vnet-dns.lab` to `10.0.0.4`.
-
-The server was then accessed by hostname:
+The complete forward-resolution and reachability test was run from `WireGuardVM1` using each system's fully qualified private DNS name:
 
 ```bash
-ssh <ADMIN_USER>@testlinuxserver1.vnet-dns.lab
+for host in \
+testclientvm1.vnet-dns.lab \
+testclientvm2.vnet-dns.lab \
+testclientvm3.vnet-dns.lab \
+testclientvm4.vnet-dns.lab \
+testclientvm5.vnet-dns.lab \
+testclientvm6.vnet-dns.lab \
+testlinuxserver1.vnet-dns.lab \
+netmonvm1.vnet-dns.lab \
+wireguardvm1.vnet-dns.lab; do
+  getent hosts "$host"
+  ping -c 2 "$host"
+done
 ```
 
-The login banner confirmed that the connection originated from `10.0.0.36`, which is the private IP address of `WireGuardVM1`.
+`getent hosts` returned the expected private IP for every FQDN, and each corresponding ping completed with zero packet loss. This validates forward private-DNS resolution and IP reachability from `WireGuardVM1` for all nine systems.
 
-This proves that hostname-based internal administration works from the jumpbox.
+See Evidence:
 
-*See Evidence:* [Private DNS validation from jumpbox](../screenshots/remote-access/jumpbox-administration-workflow/16-private-dns-validation-from-jumpbox.png)
+- [Private DNS A records verified in Azure portal](../screenshots/remote-access/jumpbox-administration-workflow/18-private-dns-a-records-verified-in-portal.png)
+- [Private DNS FQDN validation for client VMs 1 through 4](../screenshots/remote-access/jumpbox-administration-workflow/19-private-dns-fqdn-validation-clients-1-through-4.png)
+- [Private DNS FQDN validation for client VMs 5 through 6 and infrastructure VMs](../screenshots/remote-access/jumpbox-administration-workflow/20-private-dns-fqdn-validation-clients-5-through-6-and-infrastructure-vms.png)
 
-### Verify Shutdown or Deallocation
+These tests originated from `WireGuardVM1`. They do not establish private-DNS resolution from the local workstation. The test also validates forward A-record resolution only; reverse PTR lookup validation remains outside this workflow.
 
-After the administrative session was completed, `WireGuardVM1` was deallocated to stop compute charges.
+### Optional PowerShell Quick-Connect Function
 
-Deallocate the VM:
+The following convenience function shortens the public SSH command:
+
+```powershell
+function wgssh {
+    ssh -i "<PATH_TO_PRIVATE_KEY>" <ADMIN_USER>@<WIREGUARD_PUBLIC_IP_OR_DNS>
+}
+```
+
+This helper opens the jumpbox session only. It does not activate WireGuard or establish private workstation routing.
+
+See Evidence: [PowerShell quick-connect function](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/13-powershell-profile-quick-connect-function.png)
+
+### End the Workflow and Deallocate the VM
+
+After exiting all SSH sessions, deallocate the VM:
 
 ```powershell
 az vm deallocate --resource-group TestGroup1 --name WireGuardVM1
 ```
 
-Verify the power state:
+Verify the final state:
 
 ```powershell
 az vm show --resource-group TestGroup1 --name WireGuardVM1 --show-details --query powerState --output tsv
 ```
 
-Expected output:
+Expected result:
 
 ```text
 VM deallocated
 ```
 
-*See Evidence:* [WireGuard VM deallocated verification](../screenshots/remote-access/jumpbox-administration-workflow/17-wireguard-vm-deallocated-verification.png)
+## Verification
+
+### Verify Public SSH to WireGuardVM1
+
+The local workstation successfully opened an SSH session to the public endpoint on `WireGuardVM1`.
+
+See Evidence: [Jumpbox SSH login](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/11-vpn-gateway-login.png)
+
+### Verify Private SSH from the Jumpbox
+
+From `WireGuardVM1`, the administrator successfully opened an SSH session to `TestLinuxServer1` through its private address.
+
+See Evidence: [Private IP SSH from jumpbox](../screenshots/remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration/12-private-ip-ssh-validation.png)
+
+### Verify Reachability from the Jumpbox
+
+The retained reachability evidence shows successful tests from `WireGuardVM1` to `TestLinuxServer1` and all six client VMs. The historical `NetMonVM1` address `10.0.0.27` was unreachable during that capture. This evidence does not prove direct laptop-to-VNet access.
+
+See Evidence: [Internal reachability from jumpbox](../screenshots/remote-access/jumpbox-administration-workflow/15-internal-network-reachability-from-jumpbox.png)
+
+### Verify Private DNS from the Jumpbox
+
+Forward private-DNS resolution was validated from `WireGuardVM1` for the complete documented inventory:
+
+| FQDN | Expected private IP | Result |
+| --- | --- | --- |
+| `testclientvm1.vnet-dns.lab` | `10.0.0.21` | Resolved and reachable |
+| `testclientvm2.vnet-dns.lab` | `10.0.0.22` | Resolved and reachable |
+| `testclientvm3.vnet-dns.lab` | `10.0.0.23` | Resolved and reachable |
+| `testclientvm4.vnet-dns.lab` | `10.0.0.24` | Resolved and reachable |
+| `testclientvm5.vnet-dns.lab` | `10.0.0.25` | Resolved and reachable |
+| `testclientvm6.vnet-dns.lab` | `10.0.0.26` | Resolved and reachable |
+| `testlinuxserver1.vnet-dns.lab` | `10.0.0.4` | Resolved and reachable |
+| `netmonvm1.vnet-dns.lab` | `10.0.0.132` | Resolved and reachable |
+| `wireguardvm1.vnet-dns.lab` | `10.0.0.36` | Resolved and reachable |
+
+The earlier evidence also shows hostname-based SSH from `WireGuardVM1` to `testlinuxserver1.vnet-dns.lab`.
+
+See Evidence:
+
+- [Earlier private DNS SSH validation from jumpbox](../screenshots/remote-access/jumpbox-administration-workflow/16-private-dns-validation-from-jumpbox.png)
+- [Private DNS A records verified in Azure portal](../screenshots/remote-access/jumpbox-administration-workflow/18-private-dns-a-records-verified-in-portal.png)
+- [Private DNS FQDN validation for client VMs 1 through 4](../screenshots/remote-access/jumpbox-administration-workflow/19-private-dns-fqdn-validation-clients-1-through-4.png)
+- [Private DNS FQDN validation for client VMs 5 through 6 and infrastructure VMs](../screenshots/remote-access/jumpbox-administration-workflow/20-private-dns-fqdn-validation-clients-5-through-6-and-infrastructure-vms.png)
+
+### Verify Deallocation
+
+The VM was deallocated after the administrative session to support the lab's cost-control model.
+
+See Evidence: [WireGuard VM deallocated](../screenshots/remote-access/jumpbox-administration-workflow/17-wireguard-vm-deallocated-verification.png)
 
 ## Common Issues
 
-### SSH Fails After Working Previously
+### SSH Stops Working After the Administrator Address Changes
 
-Cause:
+The SSH rule may still permit an older ISP-assigned address. Update the rule with the current address and retry the public SSH connection.
 
-The local ISP may assign a new public IP address. The NSG SSH rule may still allow the old public IP.
+### Azure CLI Login Is Mistaken for Network Access
 
-Fix:
+Azure CLI authentication permits management-plane operations. It does not create a data-plane route into the VNet.
 
-Update the SSH NSG rule with the current public IP.
+### Jumpbox Ping Evidence Is Misread
 
-```bash
-curl -s ifconfig.me | xargs -I {} az network nsg rule update \
-  --resource-group TestGroup1 \
-  --nsg-name WireGuardNSG1 \
-  --name SSH \
-  --source-address-prefixes {}
-```
+Pings issued after signing in to `WireGuardVM1` originate from `10.0.0.36`. They prove jumpbox-to-resource reachability, not workstation-to-resource reachability.
 
-### Azure CLI Login Does Not Mean Private Network Access
+### VPN Requirements Are Applied to the Jumpbox Workflow
 
-Cause:
+The SSH jumpbox method works independently of WireGuard peer authentication. Troubleshoot TCP `22`, the SSH credential, VM power state, and private Azure reachability before investigating VPN-specific settings.
 
-Azure CLI authentication only provides management-plane access to Azure Resource Manager. It does not place the local workstation inside the Azure VNet.
+### Private DNS Does Not Resolve
 
-Fix:
+Confirm the private DNS zone link and A record, then test the target by private IP to separate a DNS problem from a general network problem. Use the full `vnet-dns.lab` name when validating this private zone; an unqualified hostname may resolve through Azure's platform-provided internal DNS suffix instead.
 
-Use SSH, WireGuard routing, or another valid network path for private network access. Do not treat `az login` as evidence of network-level connectivity.
+### The VM Is Stopped but Still Allocated
 
-### Ping Evidence Can Be Misread
-
-Cause:
-
-Pings issued after SSHing into `WireGuardVM1` originate from `WireGuardVM1`, not from the local laptop.
-
-Fix:
-
-Describe ping evidence accurately. In this document, internal ping validation proves:
-
-```text
-WireGuardVM1 → internal Azure systems
-```
-
-It does not prove:
-
-```text
-Laptop → internal Azure systems
-```
-
-### WireGuard Connects but Internal VMs Are Not Reachable
-
-Possible causes:
-
-* Azure NIC IP forwarding is disabled on `WireGuardVM1`.
-* Linux IP forwarding is not enabled.
-* Return route from internal subnets is missing.
-* Client `AllowedIPs` does not include the internal VNet range.
-* Internal NSG rules do not allow the traffic.
-* Target VMs are stopped or deallocated.
-* Target VMs block ICMP or SSH locally.
-
-Fix:
-
-Check IP forwarding, route table association, client `AllowedIPs`, NSG rules, VM power state, and target host firewall behavior.
-
-### DNS Names Do Not Resolve
-
-Possible causes:
-
-* Private DNS zone is not linked to the VNet.
-* Auto-registration did not populate the records.
-* The VM was stopped when DNS auto-registration was expected.
-* The client is not using the correct DNS path.
-* The hostname being queried does not match the record.
-
-Fix:
-
-Validate the private DNS zone link, confirm records exist, and test private IP access directly before troubleshooting DNS.
-
-### VM Was Stopped Instead of Deallocated
-
-Stopping the VM from inside the OS may not fully release compute billing.
-
-Fix:
-
-Use Azure deallocation when the jumpbox is no longer needed.
-
-```powershell
-az vm deallocate --resource-group TestGroup1 --name WireGuardVM1
-```
-
-Confirm the final state:
-
-```powershell
-az vm show --resource-group TestGroup1 --name WireGuardVM1 --show-details --query powerState --output tsv
-```
-
-Expected output:
-
-```text
-VM deallocated
-```
-
-### Batch File Does Not Complete as Expected
-
-The quick-access batch file was drafted as an administrative convenience but should not be treated as the confirmed workflow until tested.
-
-Possible issues:
-
-* Azure CLI is not authenticated.
-* SSH session exits unexpectedly.
-* Public IP fetch fails.
-* NSG rule update fails.
-* VM boot delay is longer than expected.
-* Script stops the VM instead of deallocating it.
-
-Fix:
-
-Run each command manually first, then test the batch file only after the manual sequence is confirmed.
+Stopping the operating system may not release Azure compute allocation. Use `az vm deallocate` and confirm `VM deallocated` when the workflow is complete.
 
 ## Lessons Learned
 
-`WireGuardVM1` provided a lower-cost alternative to Azure Bastion for this lab while still allowing private access to internal VMs.
-
-Dynamic home IP assignment created recurring SSH access issues. Updating the NSG source address before connecting became a required administrative step.
-
-WireGuard access depends on both Linux configuration and Azure networking configuration. Linux IP forwarding alone is not enough; Azure NIC IP forwarding and routing behavior must also be correct.
-
-Private DNS improves usability after the private network path is working. Private IP connectivity should be validated first, then hostname-based access can be validated through the private DNS zone.
-
-The evidence for this workflow must be described precisely. Pings and SSH commands issued from `WireGuardVM1` validate jumpbox-to-internal-resource access. They do not validate direct laptop-to-VNet ping access.
-
-The jumpbox should be deallocated after use to support the lab’s cost-control model.
-
-The PowerShell quick-connect function improves repeated access, but it is only a convenience wrapper around the validated SSH path.
+- The jumpbox path was a valid administrative workflow even though the intended VPN path remained incomplete.
+- Public SSH, WireGuard transport, and internal private access are separate stages that require separate validation.
+- Test origin must be recorded so jumpbox evidence is not misrepresented as workstation VPN evidence.
+- A dynamic administrator address requires maintenance of the restricted SSH rule.
+- Private DNS improves usability only after the underlying private network path works.
+- Private-zone validation should use the complete `vnet-dns.lab` FQDN so Azure platform DNS is not mistaken for the custom private zone.
+- Deallocation is required to support the intended cost-control workflow.
 
 ## Related Documents
 
-* [WireGuard VPN Gateway](./wireguard-vpn-gateway.md)
-* [Command Codex - WireGuard](../command-codex/system-specific/wireguard.md)
-* [Command Codex - Azure CLI](../command-codex/azure-cli/azure-cli.md)
-* [Command Codex - Bash/Linux](../command-codex/bash-linux/bash-linux.md)
-* [Cost Control Operations](../operations/cost-control-operations.md)
-* [VM Lifecycle Management](../operations/vm-lifecycle-management.md)
-* [Private DNS Implementation](../network/private-dns-implementation.md)
-* [NSG/ASG Implementation](../network/nsg-asg-implementation.md)
+- [WireGuard VM Initial Deployment and Jumpbox Configuration](wireguard-vm-initial-deployment-and-jumpbox-configuration.md)
+- [WireGuard VPN Server Linux Setup and Configuration](wireguard-vpn-server-linux-setup-and-configuration.md)
+- [WireGuard VPN Server Completion and One-Hop Administration](wireguard-vpn-server-completion-and-one-hop-access.md)
+- [Cost Control Operations](../operations/cost-control-operations.md)

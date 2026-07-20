@@ -1,0 +1,58 @@
+AZURE NETWORK INFRASTRUCTURE LAB
+SANITIZED POWERSHELL EVIDENCE EXCERPT
+
+Artifact: Phase 3 WireGuard VM module deployment troubleshooting
+Source: Private PowerShell session captured July 3, 2026
+Evidence type: Executed Azure CLI commands, What-If results, deployment errors, and cleanup commands
+
+SANITIZATION NOTICE
+
+This public artifact is a curated excerpt from the original private session log.
+The original log remains unchanged and is not intended for publication. Workstation
+headers, local paths, account information, subscription identifiers, secure input,
+unrelated output, repeated resource details, and the pasted session summary were
+omitted or redacted. Redacted values are represented by descriptive angle-bracket
+placeholders. PowerShell prompts and JSON formatting were normalized for readability
+without changing the Azure error codes or messages.
+
+======================================================================
+ATTEMPT 1 — BASIC-SKU PUBLIC IP LIMIT
+======================================================================
+
+PS> az deployment group validate --resource-group BatchTestResGroup2 --template-file ./main.bicep
+
+PS> az deployment group what-if --resource-group BatchTestResGroup2 --template-file ./main.bicep
+
+Resource changes: 18 to create.
+
+PS> az deployment group create --resource-group BatchTestResGroup2 --template-file ./main.bicep
+Please provide securestring value for 'adminPassword' (? for help):
+
+{"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Resources/deployments/main","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"ResourceDeploymentFailure","target":"/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Resources/deployments/wireguardVMModuleDeployment","message":"The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.","details":[{"code":"DeploymentFailed","target":"/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Resources/deployments/wireguardVMModuleDeployment","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"IPv4BasicSkuPublicIpCountLimitReached","message":"Cannot create more than 0 IPv4 Basic SKU public IP addresses for this subscription in this region.","details":[]}]}]}]}}
+
+Cleanup commands executed after the failed attempt:
+
+PS> $resourceIds = az resource list --resource-group BatchTestResGroup2 --query "[].id" --output tsv
+PS> az resource delete --ids $resourceIds
+
+======================================================================
+ATTEMPT 2 — INVALID SSH PUBLIC-KEY DATA
+======================================================================
+
+PS> az deployment group validate --resource-group BatchTestResGroup2 --template-file ./main.bicep
+
+PS> az deployment group what-if --resource-group BatchTestResGroup2 --template-file ./main.bicep
+
+Resource changes: 18 to create.
+
+PS> az deployment group create --resource-group BatchTestResGroup2 --template-file ./main.bicep
+Please provide securestring value for 'adminPassword' (? for help):
+
+{"status":"Failed","error":{"code":"DeploymentFailed","target":"/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Resources/deployments/main","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"ResourceDeploymentFailure","target":"/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Resources/deployments/wireguardVMModuleDeployment","message":"The resource write operation failed to complete successfully, because it reached terminal provisioning state 'Failed'.","details":[{"code":"DeploymentFailed","target":"/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Resources/deployments/wireguardVMModuleDeployment","message":"At least one resource deployment operation failed. Please list deployment operations for details. Please see https://aka.ms/arm-deployment-operations for usage details.","details":[{"code":"InvalidParameter","target":"linuxConfiguration.ssh.publicKeys.keyData","message":"The value of parameter linuxConfiguration.ssh.publicKeys.keyData is invalid."}]}]}]}}
+
+Cleanup commands executed after the failed attempt:
+
+PS> $resourceIds = az resource list --resource-group BatchTestResGroup2 --query "[].id" --output tsv
+PS> az resource delete --ids $resourceIds
+
+END OF SANITIZED EXCERPT

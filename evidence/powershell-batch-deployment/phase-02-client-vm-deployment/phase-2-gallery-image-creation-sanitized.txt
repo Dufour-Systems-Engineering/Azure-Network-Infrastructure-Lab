@@ -1,0 +1,81 @@
+AZURE NETWORK INFRASTRUCTURE LAB
+SANITIZED POWERSHELL EVIDENCE EXCERPT
+
+Artifact: Phase 2 Azure Compute Gallery image-version creation
+Source: Private PowerShell transcript captured June 25, 2026
+Evidence type: Executed Azure CLI commands and returned output
+
+SANITIZATION NOTICE
+
+This public artifact is a curated excerpt from the original private transcript.
+The original transcript remains unchanged and is not intended for publication.
+Workstation headers, local paths, tenant and subscription identifiers, unrelated
+commands, duplicate output, and incomplete attempts were omitted. Redacted values
+are represented by descriptive angle-bracket placeholders. PowerShell prompts and
+whitespace were normalized for readability.
+
+======================================================================
+SOURCE MANAGED IMAGE REFERENCE
+======================================================================
+
+PS> $sourceImageID = "/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/TestGroup1/providers/Microsoft.Compute/images/Golden-Base-1.2-image-20251103141303"
+
+======================================================================
+CREATE AZURE COMPUTE GALLERY IMAGE VERSION
+======================================================================
+
+PS> az sig image-version create `
+    --gallery-image-definition BatchTestImage2 `
+    --gallery-image-version 1.0.0 `
+    --gallery-name BatchTestGallery2 `
+    --resource-group TestGroup1 `
+    --managed-image $sourceImageID
+
+Returned resource output excerpt:
+
+"source": {
+  "id": "/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/TestGroup1/providers/Microsoft.Compute/images/Golden-Base-1.2-image-20251103141303",
+  "resourceGroup": "TestGroup1"
+},
+"tags": {},
+"type": "Microsoft.Compute/galleries/images/versions",
+"validationsProfile": {}
+
+======================================================================
+UPDATE TARGET REGIONS
+======================================================================
+
+PS> az sig image-version update --resource-group TestGroup1 --gallery-name BatchTestGallery2 --gallery-image-definition BatchTestImage2 --gallery-image-version 1.0.0 --target-regions westus=1 centralus
+
+Returned validation output excerpt:
+
+"validationsProfile": {
+  "executedValidations": [
+    {
+      "executionTime": "2026-06-25T15:46:45.5709538+00:00",
+      "status": "Succeeded",
+      "type": "TrustedLaunch",
+      "version": "2020-07-01"
+    }
+  ],
+  "platformAttributes": [
+    {
+      "name": "source_image_publisher",
+      "value": "DufourSystems"
+    },
+    {
+      "name": "source_image_offer",
+      "value": "GoldenBase"
+    },
+    {
+      "name": "source_image_sku",
+      "value": "Ubuntu2204"
+    },
+    {
+      "name": "source_image_version",
+      "value": "1.0.0"
+    }
+  ]
+}
+
+END OF SANITIZED EXCERPT

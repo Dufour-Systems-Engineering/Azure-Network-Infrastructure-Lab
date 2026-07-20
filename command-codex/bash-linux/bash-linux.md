@@ -1082,3 +1082,83 @@ Uses `jq` to read a JSON backup file, generate Azure CLI commands, and execute t
 
 * `../syntax/bash-syntax.md`
 * `../syntax/azure-cli-query-syntax.md`
+
+---
+
+# WireGuard Runtime Inspection
+
+## Inspect Interface, Service, Package, and Socket State
+
+### Classification
+
+Validated Linux commands.
+
+### Commands
+
+```bash
+sudo wg show
+ip -br addr show wg0
+sudo systemctl is-enabled wg-quick@wg0
+sudo systemctl is-active wg-quick@wg0
+sudo systemctl status wg-quick@wg0
+sudo ss -uulpn
+sudo wg --version
+dpkg -l | grep wireguard
+```
+
+### Purpose
+
+Check the WireGuard peer state, interface address, service state, UDP listener, installed packages, and tool version without changing the system.
+
+### Common Mistakes
+
+* Treating an active service as proof that a peer handshake or routed connection works.
+* Checking the wrong interface name.
+* Running Linux pipeline tools such as `grep` directly in PowerShell.
+
+---
+
+# SSH Key Authorization and Remote Sessions
+
+## Inspect and Edit Authorized Keys
+
+### Classification
+
+Validated administrative commands.
+
+### Commands
+
+```bash
+ls -la ~/.ssh
+sudo nano ~/.ssh/authorized_keys
+```
+
+### Purpose
+
+Inspect the SSH directory and edit the authorized-key file during remote-access setup.
+
+### Common Mistakes
+
+* Leaving `authorized_keys` owned by the wrong user after editing it with `sudo`.
+* Publishing public keys together with identifying infrastructure details.
+* Editing a different user's home directory.
+
+---
+
+## Connect to a Private VM and End the Session
+
+### Classification
+
+Validated SSH pattern.
+
+### Commands
+
+```bash
+ssh -i <PRIVATE_KEY_PATH> <ADMIN_USERNAME>@<PRIVATE_VM_IP>
+exit
+```
+
+### Common Mistakes
+
+* Using the wrong username or capitalization.
+* Assuming reachability guarantees that the selected key is authorized.

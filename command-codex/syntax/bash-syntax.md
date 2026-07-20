@@ -865,7 +865,7 @@ It allowed the DNS lookup command to test the current VM hostname inside the pri
 
 ---
 
-# Pipes
+# Advanced Pipe Patterns
 
 ## Pipe to xargs
 
@@ -909,7 +909,7 @@ It inserted the current public IP address into the Azure CLI NSG rule update com
 
 ---
 
-# Redirection
+# Additional Redirection Patterns
 
 ## Redirect Output to File
 
@@ -1026,7 +1026,7 @@ Long Azure CLI commands were split across multiple lines for readability.
 
 ---
 
-# Flags
+# Tool-Specific Flags
 
 ## curl Silent Flag
 
@@ -1176,7 +1176,7 @@ It executed the Azure CLI commands generated from the PTR record backup JSON.
 
 ---
 
-# Command Chaining
+# Generated Command Chaining
 
 ## AND Operator With Generated Azure CLI Commands
 
@@ -1214,7 +1214,7 @@ Private DNS PTR records required creating the record set before adding the PTR r
 
 ---
 
-# Quoting
+# Configuration Value Quoting
 
 ## Quoted Kernel Parameter
 
@@ -1249,3 +1249,32 @@ The exact sysctl setting needed to be written into the configuration file.
 ### Related Documents
 
 * [Bash/Linux Command Reference](../bash-linux/bash-linux.md)
+
+---
+
+# Case-Sensitive SSH Identity
+
+## Remote Username Capitalization
+
+### Symbol or Pattern
+
+```text
+ssh <ADMIN_USERNAME>@<HOST>
+```
+
+### Plain-English Meaning
+
+The remote username is part of the target identity and may be case-sensitive. Use the account name exactly as configured on the remote system.
+
+### Common Mistakes
+
+* Retrying the same key with an incorrectly capitalized username.
+* Confusing a key rejection with a routing failure.
+
+---
+
+# Platform Context
+
+## Do Not Mix Bash and PowerShell Pipeline Tools
+
+Commands such as `grep`, `sudo`, and `apt` belong in the Linux shell. PowerShell uses different native filtering and administration commands even when it launches tools such as `ssh` or `az`.

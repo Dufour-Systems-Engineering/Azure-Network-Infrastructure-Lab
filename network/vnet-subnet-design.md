@@ -8,9 +8,9 @@ The environment is built around a single Azure virtual network, `TestVNet1`, wit
 
 The subnet design supports organized system placement, private communication, security boundary planning, cost-conscious service selection, and easier operational troubleshooting.
 
-*See Evidence:* [01-vnet-overview.png](../screenshots/network/01-vnet-overview.png)
+*See Evidence:* [01-vnet-overview.png](../screenshots/network/vnet-subnet-design/01-vnet-overview.png)
 
-*See Evidence:* [02-subnet-layout.png](../screenshots/network/02-subnet-layout.png)
+*See Evidence:* [02-subnet-layout.png](../screenshots/network/vnet-subnet-design/02-subnet-layout.png)
 
 ## Purpose
 
@@ -86,7 +86,7 @@ The VNet is currently isolated and does not use VNet peering to connect to anoth
 
 Azure Bastion was used as an earlier remote access method, but it was later removed because of cost and because WireGuard provided a more flexible remote administration model for this lab. The current administrative access design is based on WireGuard and SSH rather than Bastion.
 
-*See Evidence:* [03-connected-devices.png](../screenshots/network/03-connected-devices.png)
+*See Evidence:* [03-connected-devices.png](../screenshots/network/vnet-subnet-design/03-connected-devices.png)
 
 ## Components
 
@@ -192,7 +192,7 @@ Relevant NSGs include:
 
 This document only identifies the NSGs associated with the network design at a high level. Detailed NSG rule documentation belongs in the NSG and ASG implementation document.
 
-*See Evidence:* [04-nsg-inventory.png](../screenshots/network/04-nsg-inventory.png)
+*See Evidence:* [04-nsg-inventory.png](../screenshots/network/vnet-subnet-design/04-nsg-inventory.png)
 
 ### VNet Address Space
 
@@ -204,7 +204,7 @@ The VNet address space defines the parent private network range used by the envi
 
 The configured subnets are carved from this address space.
 
-*See Evidence:* [05-vnet-address-space.png](../screenshots/network/05-vnet-address-space.png)
+*See Evidence:* [05-vnet-address-space.png](../screenshots/network/vnet-subnet-design/05-vnet-address-space.png)
 
 ### VNet Peering
 
@@ -212,7 +212,7 @@ VNet peering is not currently configured.
 
 The VNet is intentionally isolated and is not connected to another Azure virtual network at this stage of the lab. There is no current requirement to connect this lab network to another VNet.
 
-*See Evidence:* [08-vnet-peerings.png](../screenshots/network/08-vnet-peerings.png)
+*See Evidence:* [08-net-peerings.png](../screenshots/network/vnet-subnet-design/08-net-peerings.png)
 
 ### Azure-Provided DNS
 
@@ -220,7 +220,7 @@ The VNet uses Azure-provided DNS at the VNet level.
 
 This supports basic Azure name resolution without requiring custom DNS servers at the VNet configuration level. Private DNS implementation details are documented separately from this VNet/subnet design file.
 
-*See Evidence:* [07-vnet-dns-settings.png](../screenshots/network/07-vnet-dns-settings.png)
+*See Evidence:* [07-vnet-dns-settings.png](../screenshots/network/vnet-subnet-design/07-vnet-dns-settings.png)
 
 ### DDoS Protection
 
@@ -228,7 +228,7 @@ Azure DDoS Network Protection is not configured for this environment.
 
 This reflects the lab scope, limited public-facing exposure, and cost-control goals of the project.
 
-*See Evidence:* [09-ddos-protection-status.png](../screenshots/network/09-ddos-protection-status.png)
+*See Evidence:* [09-ddos-protection-status.png](../screenshots/network/vnet-subnet-design/09-ddos-protection-status.png)
 
 ### Bastion
 
@@ -236,7 +236,7 @@ Azure Bastion is not part of the current final remote administration model.
 
 Bastion was used as an earlier remote access method, but it was removed because of cost and replaced by a WireGuard-based remote administration path.
 
-*See Evidence:* [10-bastion-status.png](../screenshots/network/10-bastion-status.png)
+*See Evidence:* [10-bastion-status.png](../screenshots/network/vnet-subnet-design/10-bastion-status.png)
 
 ## Design Decisions
 

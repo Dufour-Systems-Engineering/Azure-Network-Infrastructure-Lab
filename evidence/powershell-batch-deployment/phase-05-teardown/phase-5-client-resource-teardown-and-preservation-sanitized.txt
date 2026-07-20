@@ -1,0 +1,129 @@
+AZURE NETWORK INFRASTRUCTURE LAB
+SANITIZED POWERSHELL EVIDENCE EXCERPT
+
+Artifact: Phase 5 client VM teardown and WireGuard VM preservation
+Source: Private PowerShell session captured July 12, 2026
+Evidence type: Executed Azure CLI and PowerShell commands with returned verification output
+
+SANITIZATION NOTICE
+
+This public artifact is a curated excerpt from the original private session log.
+The original log remains unchanged and is not intended for publication. Workstation
+headers, local paths, account information, subscription identifiers, generic help
+output, and unrelated commands were omitted or redacted. Redacted values are
+represented by descriptive angle-bracket placeholders. PowerShell prompts and
+whitespace were normalized for readability without changing the commands or results.
+
+======================================================================
+IDENTIFY CLIENT VMS THROUGH CLIENT-SUBNET NIC ASSOCIATIONS
+======================================================================
+
+PS> az network nic list `
+    --resource-group BatchTestResGroup2 `
+    --query "[?contains(ipConfigurations[].subnet.id, '/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Network/virtualNetworks/BatchTestVNet1/subnets/BatchClientSN1')].virtualMachine.id" `
+    --output tsv
+
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchTestClientVM1
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchTestClientVM2
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchTestClientVM3
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchTestClientVM4
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchTestClientVM5
+/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchTestClientVM6
+
+PS> $clientVmIds = @(
+    az network nic list `
+        --resource-group BatchTestResGroup2 `
+        --query "[?contains(ipConfigurations[].subnet.id, '/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Network/virtualNetworks/BatchTestVNet1/subnets/BatchClientSN1')].virtualMachine.id" `
+        --output tsv
+)
+
+PS> $clientVmIds.Count
+6
+
+PS> $clientVmIds | ForEach-Object { ($_ -split '/')[-1] }
+BatchTestClientVM1
+BatchTestClientVM2
+BatchTestClientVM3
+BatchTestClientVM4
+BatchTestClientVM5
+BatchTestClientVM6
+
+======================================================================
+CONFIRM WIREGUARD VM IS EXCLUDED
+======================================================================
+
+PS> $wireGuardVmFound = [bool](
+    $clientVmIds -match '/virtualMachines/BatchWireGuardVM1$'
+)
+
+PS> $wireGuardVmFound
+False
+
+======================================================================
+DELETE THE SIX CLIENT VMS
+======================================================================
+
+PS> az vm delete --ids $clientVmIds --yes
+[
+  null,
+  null,
+  null,
+  null,
+  null,
+  null
+]
+
+======================================================================
+VERIFY REMAINING VIRTUAL MACHINES
+======================================================================
+
+PS> az vm list `
+    --resource-group BatchTestResGroup2 `
+    --query "[].name" `
+    --output table
+
+Result
+-----------------
+BatchWireGuardVM1
+
+======================================================================
+VERIFY REMAINING NETWORK INTERFACES
+======================================================================
+
+PS> az network nic list `
+    --resource-group BatchTestResGroup2 `
+    --query "[].name" `
+    --output table
+
+Result
+---------------------
+BatchWireGuardVM1-nic
+
+======================================================================
+VERIFY REMAINING MANAGED DISKS
+======================================================================
+
+PS> az disk list `
+    --resource-group BatchTestResGroup2 `
+    --query "[].name" `
+    --output table
+
+Result
+------------------------
+BatchWireGuardVM1-osdisk
+
+======================================================================
+VERIFY PRESERVED WIREGUARD VM STATE
+======================================================================
+
+PS> az vm show `
+    --resource-group BatchTestResGroup2 `
+    --name BatchWireGuardVM1 `
+    --query "{Name:name, ProvisioningState:provisioningState}" `
+    --output table
+
+Name               ProvisioningState
+-----------------  -------------------
+BatchWireGuardVM1  Succeeded
+
+END OF SANITIZED EXCERPT

@@ -196,7 +196,7 @@ Visible connected devices include:
 
 This reference is useful for comparing DNS records against actual Azure network interface assignments.
 
-*See Evidence:* [07-vnet-connected-devices-reference.png](../screenshots/network/private-dns-implementation/07-vnet-connected-devices-reference.png)
+*See Evidence:* [07-vnet-connected-devices.png](../screenshots/network/private-dns-implementation/07-vnet-connected-devices.png)
 
 ### IAM Evidence
 

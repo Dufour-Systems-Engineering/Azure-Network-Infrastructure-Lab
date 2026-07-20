@@ -35,7 +35,7 @@ This document does not replace the WireGuard VPN Gateway build guide. The build 
 
 Commands were compiled from:
 
-* `remote-access/wireguard-vpn-gateway.md`
+* `remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration.md`
 * WireGuard VPN Gateway screenshots
 * `How to stand up a wireGuard VPN VM.txt`
 * `Every Command We Ran for WireGuard.md`
@@ -1283,9 +1283,99 @@ Used as the recurring quick-login method after profile configuration.
 
 ---
 
+# Batch Deployment Peer and One-Hop Validation
+
+## Add a Peer to the Running Interface
+
+### Classification
+
+Validated runtime command.
+
+### Command
+
+```bash
+sudo wg set wg0 peer <CLIENT_PUBLIC_KEY> allowed-ips <CLIENT_TUNNEL_IP>/32
+```
+
+### Purpose
+
+Add or update a peer on the running `wg0` interface without restarting the service.
+
+### Common Mistakes
+
+* Using the server public key in place of the client public key.
+* Assigning an overlapping `AllowedIPs` value.
+* Assuming the runtime change survives a restart. Add the peer to `/etc/wireguard/wg0.conf` to make it persistent.
+
+---
+
+## Verify the Tunnel Interface and Peer State
+
+### Classification
+
+Validated verification sequence.
+
+### Commands
+
+```bash
+sudo wg show
+ip -br addr show wg0
+sudo systemctl is-enabled wg-quick@wg0
+sudo systemctl is-active wg-quick@wg0
+sudo ss -uulpn
+```
+
+### Purpose
+
+Confirm that the interface exists, WireGuard has loaded its peers, the service is enabled and active, and the UDP socket is listening.
+
+---
+
+## Restart After Updating Persistent Configuration
+
+### Classification
+
+Validated service command.
+
+### Command
+
+```bash
+sudo systemctl restart wg-quick@wg0
+```
+
+### Common Mistakes
+
+* Writing `INI` or `Interface` instead of the required `[Interface]` section header.
+* Adding whitespace in an endpoint such as `<HOST> :51820`.
+* Restarting before preserving a known-good configuration or active peer state.
+
+---
+
+## Validate One-Hop SSH Through the VPN
+
+### Classification
+
+Validated access pattern.
+
+### Command
+
+```powershell
+ssh -i "<PRIVATE_KEY_PATH>" <ADMIN_USERNAME>@<PRIVATE_VM_IP>
+```
+
+### Purpose
+
+Connect directly from the administrator workstation to a private VM after the WireGuard tunnel and Azure routing were validated.
+
+### Environment Note
+
+The original manually built environment used the `10.6.0.0/24` tunnel network. The later batch environment used `10.66.0.0/24`. They are separate validated lab contexts and must not be combined into one configuration.
+
+---
+
 ## Related Documents
 
-* [WireGuard VPN Gateway](../../remote-access/wireguard-vpn-gateway.md)
+* [WireGuard VPN Gateway](../../remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration.md)
 * [Bash/Linux Command Reference](../bash-linux/bash-linux.md)
 * [PowerShell Command Reference](../powershell/powershell.md)
 * [Bash Syntax Reference](../syntax/bash-syntax.md)

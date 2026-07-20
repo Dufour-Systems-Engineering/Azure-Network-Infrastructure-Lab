@@ -491,11 +491,140 @@ Retrieves the current public IP address and updates the WireGuard NSG SSH rule s
 
 ---
 
+# Resource Groups and Bicep Deployments
+
+## Create and Inspect a Resource Group
+
+### Classification
+
+Validated Azure CLI commands.
+
+### Commands
+
+```powershell
+az group create --location <AZURE_REGION> --name <RESOURCE_GROUP>
+az group show --name <RESOURCE_GROUP>
+az group list --output table
+```
+
+### Purpose
+
+Create the deployment scope and verify that Azure recognizes it before deploying resources.
+
+### Common Mistakes
+
+* Reusing the wrong subscription context.
+* Mixing resource-group names between deployment phases.
+* Treating a successful resource-group lookup as proof that the contained resources are correct.
+
+---
+
+## Validate, Preview, and Run a Bicep Deployment
+
+### Classification
+
+Validated deployment sequence.
+
+### Commands
+
+```powershell
+az deployment group validate --resource-group <RESOURCE_GROUP> --template-file ./main.bicep
+az deployment group what-if --resource-group <RESOURCE_GROUP> --template-file ./main.bicep
+az deployment group create --resource-group <RESOURCE_GROUP> --template-file ./main.bicep
+```
+
+### Purpose
+
+Check template validity, review the expected Azure changes, and then run the resource-group deployment.
+
+### Common Mistakes
+
+* Running `create` before reviewing `what-if`.
+* Running the commands from a directory that does not contain `main.bicep`.
+* Assuming `validate` proves every runtime property or dependency will succeed.
+
+---
+
+# Resource Inventory and Targeted Cleanup
+
+## Inventory Deployment Resources
+
+### Classification
+
+Validated Azure CLI commands.
+
+### Commands
+
+```powershell
+az resource list --resource-group <RESOURCE_GROUP> --output table
+az network vnet subnet list --resource-group <RESOURCE_GROUP> --vnet-name <VNET_NAME> --output table
+az vm list --resource-group <RESOURCE_GROUP> --query "[].name" --output table
+az network nic list --resource-group <RESOURCE_GROUP> --query "[].name" --output table
+az disk list --resource-group <RESOURCE_GROUP> --query "[].name" --output table
+```
+
+### Purpose
+
+Review the resources in a deployment before or after a change. These checks were used during batch deployment and teardown validation.
+
+---
+
+## Select and Delete Client VMs by Subnet
+
+### Classification
+
+Validated destructive sequence. Review the selected VM names before deletion.
+
+### Commands
+
+```powershell
+$clientVmIds = @(
+    az network nic list `
+        --resource-group <RESOURCE_GROUP> `
+        --query "[?contains(ipConfigurations[].subnet.id, '/subnets/<CLIENT_SUBNET>')].virtualMachine.id" `
+        --output tsv
+)
+
+$clientVmIds | ForEach-Object { ($_ -split '/')[-1] }
+az vm delete --ids $clientVmIds --yes
+```
+
+### Purpose
+
+Identify VMs attached to the client subnet and delete only those VMs. In the validated Phase 5 run, the selection returned six client VMs and excluded the WireGuard gateway.
+
+### Common Mistakes
+
+* Deleting all VMs in a shared resource group.
+* Skipping review of the selected names.
+* Using a broad subnet fragment that can match an unintended subnet.
+* Assuming VM deletion automatically removes every NIC or disk; inventory those resources afterward.
+
+---
+
+## Detach an NSG from a Subnet
+
+### Classification
+
+Validated cleanup command.
+
+### Command
+
+```powershell
+az network vnet subnet update --resource-group <RESOURCE_GROUP> --vnet-name <VNET_NAME> --name <SUBNET_NAME> --nsg null
+```
+
+### Purpose
+
+Remove the subnet-to-NSG association before deleting or replacing the NSG.
+
+---
+
 ## Related Documents
 
 * [Cost Control Operations](../../operations/cost-control-operations.md)
 * [Reverse DNS Migration](../../network/private-dns-implementation.md)
-* [WireGuard VPN Gateway](../../remote-access/wireguard-vpn-gateway.md)
+* [WireGuard VPN Gateway](../../remote-access/wireguard-vm-initial-deployment-and-jumpbox-configuration.md)
 * [Bash/Linux Command Reference](../bash-linux/bash-linux.md)
 * [Azure CLI Query Syntax Reference](../syntax/azure-cli-query-syntax.md)
 * [Bash Syntax Reference](../syntax/bash-syntax.md)

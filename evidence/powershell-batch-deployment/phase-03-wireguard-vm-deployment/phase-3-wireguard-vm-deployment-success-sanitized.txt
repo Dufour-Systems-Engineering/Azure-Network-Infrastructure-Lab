@@ -1,0 +1,83 @@
+AZURE NETWORK INFRASTRUCTURE LAB
+SANITIZED POWERSHELL EVIDENCE EXCERPT
+
+Artifact: Phase 3 WireGuard VM module deployment success
+Source: Private PowerShell session captured July 7–8, 2026
+Evidence type: Executed Azure CLI commands, What-If output, and successful deployment result
+
+SANITIZATION NOTICE
+
+This public artifact is a curated excerpt from the original private session log.
+The original log remains unchanged and is not intended for publication. Workstation
+paths, account information, subscription and correlation identifiers, SSH public-key
+material, unrelated commands, repeated output, and client-resource details outside
+this artifact's scope were omitted or redacted. Redacted values are represented by
+descriptive angle-bracket placeholders. PowerShell prompts, whitespace, and selected
+JSON output were normalized for readability without changing the recorded values.
+
+======================================================================
+VALIDATE PARENT BICEP DEPLOYMENT
+======================================================================
+
+PS> az deployment group validate --resource-group BatchTestResGroup2 --template-file ./main.bicep
+
+Recorded validation result excerpt:
+
+"provisioningState": "Succeeded"
+
+======================================================================
+DEPLOYMENT WHAT-IF
+======================================================================
+
+PS> az deployment group what-if --resource-group BatchTestResGroup2 --template-file ./main.bicep
+
+Selected planned WireGuard resources and properties:
+
++ Microsoft.Compute/virtualMachines/BatchWireGuardVM1
++ Microsoft.Network/networkInterfaces/BatchWireGuardVM1-nic
+  properties.enableIPForwarding: true
++ Microsoft.Network/publicIPAddresses/BatchWireGuardVM1-ip
+  properties.dnsSettings.domainNameLabel: "batchwireguardvm1"
+  properties.publicIPAllocationMethod: "Static"
+  properties.publicIPAddressVersion: "IPv4"
+
+Resource changes: 18 to create.
+
+======================================================================
+CREATE DEPLOYMENT
+======================================================================
+
+PS> az deployment group create --resource-group BatchTestResGroup2 --template-file ./main.bicep
+Please provide securestring value for 'adminPassword' (? for help):
+
+Selected returned deployment output:
+
+"name": "main",
+"properties": {
+  "duration": "PT1M12.3552807S",
+  "error": null,
+  "mode": "Incremental",
+  "outputResources": [
+    {
+      "id": "/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Compute/virtualMachines/BatchWireGuardVM1",
+      "resourceGroup": "BatchTestResGroup2",
+      "resourceType": "Microsoft.Compute/virtualMachines"
+    },
+    {
+      "id": "/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Network/networkInterfaces/BatchWireGuardVM1-nic",
+      "resourceGroup": "BatchTestResGroup2",
+      "resourceType": "Microsoft.Network/networkInterfaces"
+    },
+    {
+      "id": "/subscriptions/<REDACTED-SUBSCRIPTION-ID>/resourceGroups/BatchTestResGroup2/providers/Microsoft.Network/publicIPAddresses/BatchWireGuardVM1-ip",
+      "resourceGroup": "BatchTestResGroup2",
+      "resourceType": "Microsoft.Network/publicIPAddresses"
+    }
+  ],
+  "provisioningState": "Succeeded",
+  "timestamp": "2026-07-08T04:13:33.155728+00:00"
+},
+"resourceGroup": "BatchTestResGroup2",
+"type": "Microsoft.Resources/deployments"
+
+END OF SANITIZED EXCERPT

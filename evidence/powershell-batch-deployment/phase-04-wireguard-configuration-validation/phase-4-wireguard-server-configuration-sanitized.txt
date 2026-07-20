@@ -1,0 +1,64 @@
+AZURE NETWORK INFRASTRUCTURE LAB
+SANITIZED POWERSHELL EVIDENCE EXCERPT
+
+Artifact: Phase 4 WireGuard server package and IPv4-forwarding configuration
+Sources: Private PowerShell transcripts captured July 8–9, 2026
+Evidence type: SSH session output returned by the WireGuard VM
+
+SANITIZATION NOTICE
+
+This public artifact combines curated excerpts from two private PowerShell
+transcripts. The original transcripts remain unchanged and are not intended for
+publication. Workstation headers, local usernames and paths, subscription details,
+SSH endpoint addresses, administrative usernames, unrelated shell input, and
+session-exit metadata were omitted or redacted. Redacted values are represented by
+descriptive angle-bracket placeholders. PowerShell prompts and whitespace were
+normalized for readability.
+
+EVIDENCE LIMITATION
+
+The PowerShell transcripts captured the output returned by the remote Linux shell,
+but did not capture the Linux package-installation or sysctl commands themselves.
+No missing command has been reconstructed. This excerpt supports package installation
+and IPv4-forwarding state only; it does not independently prove wg0 configuration,
+peer configuration, a WireGuard handshake, NAT behavior, or client connectivity.
+
+======================================================================
+SSH SESSION AND WIREGUARD PACKAGE INSTALLATION OUTPUT
+======================================================================
+
+PS> ssh -i "<REDACTED-SSH-PRIVATE-KEY-PATH>" <REDACTED-ADMIN-USER>@<REDACTED-WIREGUARD-PUBLIC-IP>
+
+Selecting previously unselected package wireguard.
+Preparing to unpack .../wireguard_1.0.20210914-1ubuntu2_all.deb ...
+Unpacking wireguard (1.0.20210914-1ubuntu2) ...
+Setting up wireguard-tools (1.0.20210914-1ubuntu2) ...
+wg-quick.target is a disabled or a static unit not running, not starting it.
+Setting up wireguard (1.0.20210914-1ubuntu2) ...
+Processing triggers for man-db (2.10.2-1) ...
+Scanning processes...
+Scanning linux images...
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+No containers need to be restarted.
+No user sessions are running outdated binaries on this host.
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+======================================================================
+PERSISTENT IPV4 FORWARDING OUTPUT
+======================================================================
+
+PS> ssh lab-server
+
+fs.protected_fifos = 1
+fs.protected_hardlinks = 1
+fs.protected_regular = 2
+fs.protected_symlinks = 1
+* Applying /etc/sysctl.d/99-sysctl.conf ...
+* Applying /etc/sysctl.d/99-wg.conf ...
+net.ipv4.ip_forward = 1
+* Applying /etc/sysctl.conf ...
+
+END OF SANITIZED EXCERPT

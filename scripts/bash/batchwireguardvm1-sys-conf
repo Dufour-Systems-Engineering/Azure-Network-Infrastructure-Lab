@@ -1,0 +1,23 @@
+cat << 'EOF' > generate_config.sh
+#!/bin/bash
+echo "=== SYSTEM UPTIME & KERNEL ==="
+uname -a && uptime
+echo -e "\n=== OS VERSION ==="
+cat /etc/os-release
+echo -e "\n=== CPU INFO ==="
+lscpu | grep -E "Model name|Core\(s\) per socket|Socket\(s\)|CPU\(s\):"
+echo -e "\n=== MEMORY (RAM) ==="
+free -h
+echo -e "\n=== STORAGE & DISK SPACE ==="
+df -h
+echo -e "\n=== NETWORK INTERFACES & IPS ==="
+ip -br a
+echo -e "\n=== ROUTING TABLE ==="
+ip route
+echo -e "\n=== INSTALLED APT PACKAGES ==="
+apt list --installed 2>/dev/null | head -n 100
+echo "...(truncated first 100 packages)..."
+EOF
+chmod +x generate_config.sh
+./generate_config.sh > ~/vm_full_configuration.txt
+rm generate_config.sh

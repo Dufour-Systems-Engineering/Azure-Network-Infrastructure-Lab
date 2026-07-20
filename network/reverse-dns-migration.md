@@ -101,7 +101,7 @@ Current link configuration:
 
 The connected devices view confirms the private IP assignments used by the PTR records.
 
-*See Evidence:* [07-vnet-connected-devices-reference.png](../screenshots/network/private-dns-implementation/07-vnet-connected-devices-reference.png)
+*See Evidence:* [07-vnet-connected-devices.png](../screenshots/network/private-dns-implementation/07-vnet-connected-devices.png)
 
 ## Design Decisions
 

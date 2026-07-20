@@ -257,6 +257,5 @@ Delete-on-removal settings are useful for disposable client VMs, but infrastruct
 
 ## Related Documents
 
-* [VM Lifecycle Management](vm-lifecycle-management.md)
-* [Administrative Command Library](administrative-command-library.md)
+* [Cost Control Command Reference](../command-codex/system-specific/cost-control-ops.md)
 * [Jumpbox Administration Workflow](../remote-access/jumpbox-administration-workflow.md)

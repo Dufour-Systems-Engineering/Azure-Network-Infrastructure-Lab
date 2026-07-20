@@ -521,3 +521,78 @@ The ICMP rule did not need a specific destination port.
 
 * [Azure CLI Command Reference](../azure-cli/azure-cli.md)
 * [Bash Syntax Reference](./bash-syntax.md)
+
+---
+
+# Tab-Separated Output
+
+## `--output tsv`
+
+### Symbol or Pattern
+
+```text
+--output tsv
+```
+
+### Plain-English Meaning
+
+Return values without JSON decoration so they can be captured directly by PowerShell or passed to another command.
+
+### Where It Appears
+
+```powershell
+$resourceIds = az resource list --resource-group <RESOURCE_GROUP> --query "[].id" --output tsv
+```
+
+### Common Mistakes
+
+* Expecting a table header or JSON property names.
+* Passing empty output to a destructive command without checking it first.
+
+---
+
+# Array Projection and Filtering
+
+## Project One Property from Every Result
+
+### Symbol or Pattern
+
+```text
+[].id
+```
+
+### Plain-English Meaning
+
+Select the `id` property from every object in the result array.
+
+### Where It Appears
+
+Resource inventory, cleanup, and VM-ID collection.
+
+---
+
+## Filter NICs by Subnet Membership
+
+### Symbol or Pattern
+
+```text
+[?contains(ipConfigurations[].subnet.id, '/subnets/<CLIENT_SUBNET>')].virtualMachine.id
+```
+
+### Plain-English Meaning
+
+Keep NICs whose IP configuration belongs to the named subnet, then return the attached VM resource IDs.
+
+### Breakdown
+
+* `[? ... ]` filters an array.
+* `contains(...)` tests whether a value contains the supplied subnet fragment.
+* `ipConfigurations[].subnet.id` projects subnet IDs from the NIC IP configurations.
+* `.virtualMachine.id` returns the attached VM ID.
+
+### Common Mistakes
+
+* Supplying `--query` without a query expression.
+* Filtering by an ambiguous substring.
+* Assuming every NIC is attached to a VM.
+* Using the returned IDs in `delete` before inspecting the selected VM names.

@@ -241,6 +241,24 @@ Commands were validated through:
 
 ---
 
+## Deliberate Shift to Help and Documentation
+
+As the lab matured, I deliberately changed how I obtained and verified commands. Instead of relying primarily on remembered syntax or accepting AI-generated commands at face value, I began using built-in command help and official documentation as the normal starting point.
+
+This included practices such as:
+
+* running `az <command> --help` before using an unfamiliar Azure CLI operation;
+* using `Get-Help` and `Get-Command` when working in PowerShell;
+* checking Linux manual pages, package documentation, and service help;
+* comparing proposed syntax with Microsoft, Ubuntu, WireGuard, and other vendor documentation;
+* validating the resulting command against the actual lab environment and recording the outcome.
+
+This was a deliberate learning and operating decision. Help output and documentation were used to understand parameters, scope, defaults, and safety implications—not merely to copy command text. AI-assisted tools remained useful for explanation and troubleshooting, but their suggestions were treated as proposals until supported by documentation and successful execution.
+
+Raw help output is normally kept as source evidence rather than copied wholesale into the Command Codex. The Codex records the useful command, its purpose, relevant syntax, and the result of validation.
+
+---
+
 ## Deployment and Validation Commands
 
 The Command Codex includes both commands that changed the environment and commands that verified the environment.
@@ -410,3 +428,48 @@ Examples:
 The purpose of the Command Codex is not to demonstrate command-line expertise by implying every command was known from memory.
 
 Its purpose is to document, understand, validate, and continuously improve command-line knowledge through practical use within the Azure Network Infrastructure Lab.
+
+---
+
+## Evidence Classification
+
+Commands are evaluated using the strongest available evidence:
+
+1. Direct terminal or PowerShell transcript showing the command and its result.
+2. Session notes explicitly confirming successful execution.
+3. Existing lab documentation tied to an implemented environment.
+4. Proposed or explanatory examples without execution evidence.
+
+Only the first three categories normally become operational Command Codex entries. Proposed commands remain source material until they are executed and validated.
+
+Failed or superseded commands are retained only when they explain a useful troubleshooting lesson. They must not be presented as the normal working procedure.
+
+---
+
+## Provenance and Organization
+
+Phase and chat extraction files are evidence records, not the published navigation model. After validation and deduplication, commands are filed by tool, syntax, or operational system:
+
+* Azure CLI commands belong in `azure-cli/`.
+* Linux commands belong in `bash-linux/`.
+* PowerShell commands belong in `powershell/`.
+* Reusable language patterns belong in `syntax/`.
+* Cross-tool workflows belong in `system-specific/`.
+
+This prevents the same command from being copied into separate Phase 1, Phase 2, and Phase 3 references.
+
+The Command Codex is therefore a curated reference rather than a transcript archive. Repeated commands are consolidated into one canonical entry, specialized workflows are placed in their system-specific document, and raw help output is omitted unless it explains an important troubleshooting lesson. The number of source chats or transcripts will not translate directly into the same amount of growth in each command-reference file.
+
+---
+
+## Destructive Command Standard
+
+Commands that delete, detach, overwrite, or broadly deallocate resources must include:
+
+* a clear destructive classification;
+* the required scope variables or selection query;
+* a review step before execution;
+* common scope mistakes;
+* a post-operation verification command.
+
+Examples that delete every VM in a shared resource group are excluded unless that entire resource group is intentionally disposable.

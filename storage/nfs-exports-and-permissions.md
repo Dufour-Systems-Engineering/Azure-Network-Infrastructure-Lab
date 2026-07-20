@@ -271,4 +271,4 @@ The final screenshot set avoids duplication by using one detailed permission scr
 * [NFS Client Integration](nfs-client-integration.md)
 * [NSG and ASG Implementation](../network/nsg-asg-implementation.md)
 * [Private DNS Implementation](../network/private-dns-implementation.md)
-* [Administrative Command Library](../operations/administrative-command-library.md)
+* [Bash/Linux Command Reference](../command-codex/bash-linux/bash-linux.md)

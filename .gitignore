@@ -1,0 +1,2 @@
+command-codex/powershell/*
+!command-codex/powershell/powershell.md

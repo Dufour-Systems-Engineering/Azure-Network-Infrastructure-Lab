@@ -209,6 +209,101 @@ Checks whether PowerShell recognizes the `wgssh` function or command.
 
 ---
 
+# Session Evidence and Secure Input
+
+## Record a PowerShell Session
+
+### Classification
+
+Validated PowerShell commands.
+
+### Commands
+
+```powershell
+Start-Transcript -Path ".\<SESSION_NAME>.txt"
+Stop-Transcript
+```
+
+### Purpose
+
+Capture commands and console output as execution evidence. Review transcripts for secrets before sharing them.
+
+---
+
+## Read a Sensitive Deployment Value Interactively
+
+### Classification
+
+Validated input and validation pattern.
+
+### Commands
+
+```powershell
+$adminPassword = Read-Host "Enter VM admin password"
+[string]::IsNullOrWhiteSpace($adminPassword)
+```
+
+### Purpose
+
+Avoid hardcoding a password in the command history and check that a value was supplied.
+
+### Common Mistakes
+
+* Saving the entered value in documentation or source control.
+* Assuming `Read-Host` makes a normal string cryptographically secure.
+
+---
+
+# SSH Key Preparation
+
+## Generate an RSA SSH Key Pair in PEM Format
+
+### Classification
+
+Validated PowerShell-hosted external command.
+
+### Commands
+
+```powershell
+ssh-keygen -m PEM -t rsa -b 2048 -f "C:\Path\To\Keys\<KEY_FILENAME>"
+Get-Content -Path "C:\Path\To\Keys\<KEY_FILENAME>.pub"
+```
+
+### Common Mistakes
+
+* Omitting `-b` before the key size.
+* Passing only a directory after `-f`; it requires an output filename.
+* Publishing the generated private key.
+
+---
+
+# Connectivity Validation
+
+## Test Multiple VPN and Private Targets
+
+### Classification
+
+Validated PowerShell sequence.
+
+### Commands
+
+```powershell
+$targets = "<VPN_GATEWAY_IP>", "<PRIVATE_VM_IP_1>", "<PRIVATE_VM_IP_2>"
+
+$targets | ForEach-Object {
+    [pscustomobject]@{
+        Target    = $_
+        Reachable = Test-Connection -ComputerName $_ -Count 2 -Quiet
+    }
+}
+```
+
+### Purpose
+
+Produce a compact reachability result for the WireGuard interface and internal VMs.
+
+---
+
 ## Related Documents
 
 * [WireGuard Command Library](../system-specific/wireguard.md)

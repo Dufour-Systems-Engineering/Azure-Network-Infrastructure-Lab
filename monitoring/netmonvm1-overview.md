@@ -132,10 +132,10 @@ Separating monitoring responsibilities from workload systems also established a 
 
 ## Related Documents
 
-* `deployment/golden-image-management.md`
+* `deployment/golden-image-management/golden-image-management.md`
 * `network/nsg-asg-implementation.md`
 * `network/private-dns-implementation.md`
-* `remote-access/wireguard-vpn-gateway.md`
+* `remote-access/README.md`
 * `operations/cost-control-operations.md`
-* `monitoring/centralized-logging-with-rsyslog.md` *(Planned)*
+* `monitoring/centralized-logging-with-rsyslog.md`
 * `monitoring/network-monitoring-workflows.md` *(Planned)*

@@ -456,6 +456,105 @@ Used after restarting a VM to confirm that the expected state changed to `VM run
 
 ---
 
+# Bulk Deallocation
+
+## Deallocate Every VM in a Resource Group
+
+### Classification
+
+Validated Azure CLI command. Use only when every VM in the selected resource group should stop incurring compute charges.
+
+### Command
+
+```powershell
+az vm deallocate --resource-group <RESOURCE_GROUP> --ids $(az vm list --resource-group <RESOURCE_GROUP> --query "[].id" --output tsv)
+```
+
+### Purpose
+
+Collect the VM resource IDs in a resource group and deallocate them as one operation.
+
+### Common Mistakes
+
+* Running the command against a shared resource group that contains a gateway or monitoring VM that must remain available.
+* Confusing a stopped guest OS with Azure's `Stopped (deallocated)` state.
+
+---
+
+# Targeted Client Teardown
+
+## Select Client VMs from the Client Subnet
+
+### Classification
+
+Validated Phase 5 safety sequence.
+
+### Commands
+
+```powershell
+$clientVmIds = @(
+    az network nic list `
+        --resource-group <RESOURCE_GROUP> `
+        --query "[?contains(ipConfigurations[].subnet.id, '/subnets/<CLIENT_SUBNET>')].virtualMachine.id" `
+        --output tsv
+)
+
+$clientVmIds.Count
+$clientVmIds | ForEach-Object { ($_ -split '/')[-1] }
+$gatewaySelected = [bool]($clientVmIds -match '/virtualMachines/<WIREGUARD_VM_NAME>$')
+$gatewaySelected
+```
+
+### Purpose
+
+Build and inspect an explicit client-VM deletion set, then verify that the WireGuard gateway is not included.
+
+### Common Mistakes
+
+* Treating array `-match` output as a Boolean without converting it.
+* Continuing when the count or names differ from the expected client deployment.
+
+---
+
+## Delete the Reviewed Client VM Set
+
+### Classification
+
+Validated destructive command.
+
+### Command
+
+```powershell
+az vm delete --ids $clientVmIds --yes
+```
+
+### Required Precondition
+
+Print the selected names and verify that the gateway-selection Boolean is `False` before running the command.
+
+---
+
+## Verify the Teardown Result
+
+### Classification
+
+Validated post-deletion sequence.
+
+### Commands
+
+```powershell
+az vm list --resource-group <RESOURCE_GROUP> --query "[].name" --output table
+az network nic list --resource-group <RESOURCE_GROUP> --query "[].name" --output table
+az disk list --resource-group <RESOURCE_GROUP> --query "[].name" --output table
+az vm show --resource-group <RESOURCE_GROUP> --name <WIREGUARD_VM_NAME> --query "{Name:name, ProvisioningState:provisioningState}" --output table
+```
+
+### Purpose
+
+Confirm that the client VMs are gone, identify any remaining NICs or disks, and verify that the WireGuard gateway still exists.
+
+---
+
 ## Related Documents
 
 * [Cost Control Operations](../../operations/cost-control-operations.md)

@@ -417,3 +417,100 @@ The SSH key path needed to be passed to SSH as one complete value.
 * [Bash Syntax Reference](./bash-syntax.md)
 
 ---
+
+# Arrays and Pipelines
+
+## Array Literal and Pipeline Processing
+
+### Symbol or Pattern
+
+```powershell
+$targets = "<HOST_1>", "<HOST_2>"
+$targets | ForEach-Object { $_ }
+```
+
+### Plain-English Meaning
+
+The comma creates an array, the pipeline sends each item onward, and `$_` represents the current item.
+
+### Common Mistakes
+
+* Forgetting commas between array values.
+* Treating `$_` as a global variable outside the pipeline script block.
+
+---
+
+# Structured Output
+
+## Create a Custom Object
+
+### Symbol or Pattern
+
+```powershell
+[pscustomobject]@{
+    Name   = $_
+    Active = $true
+}
+```
+
+### Plain-English Meaning
+
+Create a structured object whose named properties can be displayed as a table or used later in the pipeline.
+
+---
+
+# External Command Output
+
+## Capture External Command Output in an Array
+
+### Symbol or Pattern
+
+```powershell
+$ids = @(
+    az resource list --query "[].id" --output tsv
+)
+```
+
+### Plain-English Meaning
+
+Run the external command and force its returned lines into a PowerShell array, including when only one line is returned.
+
+---
+
+# Matching and Boolean Conversion
+
+## Convert an Array Match Result to Boolean
+
+### Symbol or Pattern
+
+```powershell
+$found = [bool]($ids -match '/virtualMachines/<VM_NAME>$')
+```
+
+### Plain-English Meaning
+
+`-match` applied to an array returns the matching elements, not a Boolean. `[bool](...)` converts the result into a clear true-or-false safety check.
+
+### Common Mistakes
+
+* Interpreting blank array-match output as a displayed `False` value.
+* Running a destructive command before printing and reviewing the selected objects.
+
+---
+
+# Line Continuation
+
+## PowerShell Backtick
+
+### Symbol or Pattern
+
+```powershell
+az vm list `
+    --resource-group <RESOURCE_GROUP> `
+    --output table
+```
+
+### Common Mistakes
+
+* Adding spaces after the backtick.
+* Confusing PowerShell's backtick with Bash's backslash continuation.
